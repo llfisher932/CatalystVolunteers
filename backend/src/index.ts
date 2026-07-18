@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import userRouter from "./routers/user.router.js";
 
 let app = express();
 app.use(
@@ -10,6 +11,8 @@ app.use(
 );
 
 app.use(express.json());
+
+app.use("/users", userRouter);
 
 //start express app on port 3000
 app.listen(3000, () => {
