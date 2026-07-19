@@ -10,6 +10,45 @@ const SALT_ROUNDS = 12;
 const MIN_PASSWORD_LENGTH = 8;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/**
+ * @openapi
+ * /users/register:
+ *   post:
+ *     summary: Register a new user
+ *     description: Creates a new user account. Passwords are hashed with bcrypt before storage; the password is never returned.
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RegisterRequest'
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Missing or invalid name, email, or password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BadRequestError'
+ *       409:
+ *         description: Email is already registered
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ConflictError'
+ *       500:
+ *         description: Unexpected server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
+ */
 router.post("/register", async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
@@ -52,6 +91,45 @@ router.post("/register", async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /users/login:
+ *   post:
+ *     summary: Log in a user
+ *     description: Verifies email and password, then returns a signed JWT (60 minute expiry) for use as a Bearer token on protected routes.
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginResponse'
+ *       400:
+ *         description: Email and password are required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BadRequestError'
+ *       401:
+ *         description: Invalid email or password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UnauthorizedError'
+ *       500:
+ *         description: Unexpected server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
+ */
 router.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;

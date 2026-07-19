@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import userRouter from "./routers/user.router.js";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./swagger.js";
 
 let app = express();
 app.use(
@@ -11,6 +13,8 @@ app.use(
 );
 
 app.use(express.json());
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec)); // Serve Swagger UI at /api-docs
 
 app.use("/users", userRouter);
 
