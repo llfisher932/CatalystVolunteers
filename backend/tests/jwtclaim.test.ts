@@ -7,7 +7,8 @@ afterEach(() => {
   vi.resetModules();
 });
 
-//these tests don't follow our conventions for other tests (beforeEach -> it -> expect) because they are extremely small for 1 file.
+//these tests don't follow our conventions for other tests (beforeEach -> it -> expect) because they are extremely small.
+//if the tests were written in the same style as the other tests, they would be unnecessarily verbose and hard to read.
 describe("SECRET loading", () => {
   it("throws when JWT_SECRET is not set", async () => {
     vi.stubEnv("JWT_SECRET", "");
