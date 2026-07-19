@@ -42,6 +42,8 @@ DATABASE_URL="postgresql://<user>:<password>@<host>:6543/postgres?pgbouncer=true
 
 # Connect to Postgres via the shared session-mode pooler — used for Prisma migrations
 DIRECT_URL="postgresql://<user>:<password>@<host>:5432/postgres"
+
+JWT_SECRET="random-long-string"
 ```
 
 **The real values are pinned in our Discord server** — grab them there and paste them in. Do **not** commit your `.env`; this repo is public, but the credentials are not. `.env` is already in `.gitignore`.
