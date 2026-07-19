@@ -7,7 +7,8 @@
     "postinstall": "prisma generate",
     "dev": "nodemon",
     "typecheck": "tsc --noEmit",
-    "compile": "tsc"
+    "compile": "tsc",
+    "test": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -28,11 +29,14 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/supertest": "^7.2.1",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "dotenv": "^17.4.2",
     "nodemon": "^3.1.14",
     "prisma": "^7.8.0",
-    "tsx": "^4.23.1"
+    "supertest": "^7.2.2",
+    "tsx": "^4.23.1",
+    "vitest": "^4.1.10"
   }
 }
