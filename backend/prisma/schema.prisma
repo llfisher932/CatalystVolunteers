@@ -1,7 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  DISAPPROVED
+  INACTIVE
+}
 
 generator client {
   provider = "prisma-client"
@@ -17,4 +19,39 @@ model User {
   email    String @unique
   password String
   name     String
+}
+
+model Volunteer {
+  id                    Int            @id @default(autoincrement())
+  firstName             String
+  lastName              String
+  username              String         @unique // we have no volunteer login, but this is in the requirements
+  password              String // we have no volunteer login, but this is in the requirements
+  email                 String         @unique
+  address               String?
+  homePhone             String?
+  workPhone             String?
+  cellPhone             String?
+  educationalBackground String?
+  currentLicenses       String?
+  skills                String[] // Skills/Interests
+  availability          String? // Availability times — see notes
+  approvalStatus        ApprovalStatus @default(PENDING)
+
+  // Emergency contact
+  emergencyName      String?
+  emergencyHomePhone String?
+  emergencyWorkPhone String?
+  emergencyEmail     String?
+  emergencyAddress   String?
+
+  // Documents on file
+  driversLicenseOnFile Boolean @default(false)
+  socialSecurityOnFile Boolean @default(false)
+
+  //preferredCenters Center[] @relation("VolunteerPreferredCenters")
+  //matches          Match[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
