@@ -97,4 +97,17 @@ describe("app wiring", () => {
       expect(res.body.status).toBe("ok");
     });
   });
+
+  describe("the volunteers router is reachable", () => {
+    let res: Response;
+
+    beforeEach(async () => {
+      res = await request(app).post("/volunteers").send({});
+    });
+
+    // 401 rather than 404 proves the route matched and auth middleware ran
+    it("is mounted under /volunteers", () => {
+      expect(res.status).toBe(401);
+    });
+  });
 });
