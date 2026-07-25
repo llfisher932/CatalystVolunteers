@@ -7,5 +7,5 @@ export const SECRET: string = secret;
 export type JWTClaim = {
   id: number;
   name: string;
-  email: string;
+  username: string;
 };
