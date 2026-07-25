@@ -10,7 +10,7 @@ vi.mock("../../src/db.js", () => ({
   default: {
     user: {
       create: vi.fn(),
-      findFirst: vi.fn(),
+      findUnique: vi.fn(),
     },
   },
 }));
@@ -148,7 +148,7 @@ describe("POST /users/login", () => {
       expect(res.status).toBe(400);
     });
     it("does not look up a user", () => {
-      expect(prisma.user.findFirst).not.toHaveBeenCalled();
+      expect(prisma.user.findUnique).not.toHaveBeenCalled();
     });
   });
 
@@ -156,7 +156,7 @@ describe("POST /users/login", () => {
     let res: Response;
 
     beforeEach(async () => {
-      (prisma.user.findFirst as any).mockResolvedValue(null);
+      (prisma.user.findUnique as any).mockResolvedValue(null);
 
       res = await request(app).post("/users/login").send({ email: "nobody@example.com", password: "whatever123" });
     });
@@ -176,7 +176,7 @@ describe("POST /users/login", () => {
       const bcrypt = await import("bcrypt");
       const realHash = await bcrypt.default.hash("correct-password", 4);
 
-      (prisma.user.findFirst as any).mockResolvedValue({
+      (prisma.user.findUnique as any).mockResolvedValue({
         id: 1,
         name: "Jane",
         email: "jane@example.com",
@@ -201,7 +201,7 @@ describe("POST /users/login", () => {
       const bcrypt = await import("bcrypt");
       const realHash = await bcrypt.default.hash("correct-password", 4);
 
-      (prisma.user.findFirst as any).mockResolvedValue({
+      (prisma.user.findUnique as any).mockResolvedValue({
         id: 1,
         name: "Jane",
         email: "jane@example.com",
