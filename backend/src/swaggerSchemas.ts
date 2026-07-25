@@ -144,8 +144,8 @@
  *       required: [firstName, lastName, username, password, email]
  *       description: >
  *         Fields for creating a volunteer. Optional string fields are trimmed;
- *         email addresses are lowercased. Approval status is not settable here —
- *         new volunteers always start as PENDING.
+ *         email addresses are lowercased. Approval status may be supplied; if
+ *         omitted it defaults to PENDING.
  *       properties:
  *         firstName:
  *           type: string
@@ -213,6 +213,11 @@
  *         socialSecurityOnFile:
  *           type: boolean
  *           default: false
+ *         approvalStatus:
+ *           allOf:
+ *             - $ref: '#/components/schemas/ApprovalStatus'
+ *           default: "PENDING"
+ *           description: Defaults to PENDING when omitted.
  *
  *     VolunteerUpdateRequest:
  *       type: object
@@ -301,7 +306,7 @@
  *         - $ref: '#/components/schemas/ErrorResponse'
  *       example:
  *         status: 400
- *         message: "A valid email is required"
+ *         message: "Email: Invalid Email address"
  *     UnauthorizedError:
  *       allOf:
  *         - $ref: '#/components/schemas/ErrorResponse'
@@ -313,13 +318,13 @@
  *         - $ref: '#/components/schemas/ErrorResponse'
  *       example:
  *         status: 404
- *         message: "Volunteer not found"
+ *         message: "Record not found"
  *     ConflictError:
  *       allOf:
  *         - $ref: '#/components/schemas/ErrorResponse'
  *       example:
  *         status: 409
- *         message: "Email already registered"
+ *         message: "That email is already in use"
  *     ServerError:
  *       allOf:
  *         - $ref: '#/components/schemas/ErrorResponse'

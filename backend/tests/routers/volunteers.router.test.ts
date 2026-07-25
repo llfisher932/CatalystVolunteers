@@ -31,10 +31,12 @@ vi.mock("bcrypt", () => ({
 import prisma from "../../src/db.js";
 import bcrypt from "bcrypt";
 import volunteerRouter from "../../src/routers/volunteers.router.js";
+import { errorHandler } from "../../src/middleware/errors.js";
 
 const app = express();
 app.use(express.json());
 app.use("/volunteers", volunteerRouter);
+app.use(errorHandler);
 
 const validBody = {
   firstName: "Jane",
@@ -200,6 +202,7 @@ describe("POST /volunteers", () => {
     let res: Response;
 
     beforeEach(async () => {
+      //this line will throw errors in the terminal, its expected and means it is working properly.
       (prisma.volunteer.create as any).mockRejectedValue(new Error("connection lost"));
 
       res = await request(app).post("/volunteers").send(validBody);

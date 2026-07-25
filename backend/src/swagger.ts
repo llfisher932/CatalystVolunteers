@@ -1,4 +1,5 @@
 import swaggerJsdoc from "swagger-jsdoc";
+const PORT = process.env.PORT ?? 3000;
 
 const options: swaggerJsdoc.Options = {
   definition: {
@@ -8,7 +9,7 @@ const options: swaggerJsdoc.Options = {
       version: "1.0.0",
       description: "API for managing volunteers and opportunities",
     },
-    servers: [{ url: "http://localhost:3000" }],
+    servers: [{ url: `http://localhost:${PORT}` }],
     components: {
       securitySchemes: {
         bearerAuth: {

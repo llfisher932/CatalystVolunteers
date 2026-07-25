@@ -3,6 +3,7 @@ import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.js";
 import { userRouter, volunteersRouter } from "./routers/index.js";
+import { errorHandler, notFoundHandler } from "./middleware/index.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -22,6 +23,9 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/users", userRouter);
 app.use("/volunteers", volunteersRouter);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 if (process.env.NODE_ENV !== "test") {
   app.listen(PORT, () => {

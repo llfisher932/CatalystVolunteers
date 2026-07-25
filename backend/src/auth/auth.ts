@@ -1,27 +1,26 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import { SECRET, type JWTClaim } from "../jwtclaim.js";
+import { Unauthorized } from "../middleware/errors.js";
 
 export type AuthedRequest = express.Request & { user?: JWTClaim };
 
-export const RequiresAuth = (req: AuthedRequest, res: express.Response, next: express.NextFunction) => {
-  if (!req.headers.authorization) {
-    return res.status(401).json({ status: 401, message: "Unauthorized Request" });
-  } else {
-    const [scheme, token] = req.headers.authorization.split(" ");
-    if (scheme !== "Bearer") {
-      return res.status(401).json({ status: 401, message: "Unauthorized Request" });
-    } else if (!token) {
-      return res.status(401).json({ status: 401, message: "Unauthorized Request" });
-    } else {
-      jwt.verify(token, SECRET, (err, decoded) => {
-        if (err) {
-          return res.status(401).json({ status: 401, message: "Unauthorized Request" });
-        } else {
-          req.user = decoded as unknown as JWTClaim;
-          next();
-        }
-      });
-    }
+export const RequiresAuth = (req: AuthedRequest, _res: express.Response, next: express.NextFunction) => {
+  const header = req.headers.authorization;
+  if (!header) {
+    throw Unauthorized("Unauthorized Request");
   }
+
+  const [scheme, token] = header.split(" ");
+  if (scheme?.toLowerCase() !== "bearer" || !token) {
+    throw Unauthorized("Unauthorized Request");
+  }
+
+  try {
+    req.user = jwt.verify(token, SECRET) as JWTClaim;
+  } catch {
+    throw Unauthorized("Unauthorized Request");
+  }
+
+  next();
 };

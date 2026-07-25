@@ -17,10 +17,12 @@ vi.mock("../../src/db.js", () => ({
 
 import prisma from "../../src/db.js";
 import userRouter from "../../src/routers/user.router.js";
+import { errorHandler } from "../../src/middleware/errors.js";
 
 const app = express();
 app.use(express.json());
 app.use("/users", userRouter);
+app.use(errorHandler);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -100,7 +102,7 @@ describe("POST /users/register", () => {
       expect(res.status).toBe(409);
     });
     it("reports the email as already registered", () => {
-      expect(res.body.message).toMatch(/already registered/i);
+      expect(res.body.message).toMatch(/That value is already in use/i);
     });
     it("attempted to create the user", () => {
       expect(prisma.user.create).toHaveBeenCalledTimes(1);
