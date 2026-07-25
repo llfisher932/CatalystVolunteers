@@ -139,6 +139,56 @@
  *         approvalStatus:
  *           $ref: '#/components/schemas/ApprovalStatus'
  *
+ *     VolunteerSummary:
+ *       type: object
+ *       description: The condensed volunteer shape returned by the list view.
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         firstName:
+ *           type: string
+ *           example: "Jane"
+ *         lastName:
+ *           type: string
+ *           example: "Doe"
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: "jane.doe@example.com"
+ *         approvalStatus:
+ *           $ref: '#/components/schemas/ApprovalStatus'
+ *
+ *     Pagination:
+ *       type: object
+ *       properties:
+ *         page:
+ *           type: integer
+ *           example: 1
+ *         limit:
+ *           type: integer
+ *           example: 25
+ *         total:
+ *           type: integer
+ *           description: Total number of volunteers matching the filter and search
+ *           example: 42
+ *         totalPages:
+ *           type: integer
+ *           example: 2
+ *
+ *     VolunteerListResponse:
+ *       type: object
+ *       description: >
+ *         A page of volunteers. An empty `data` array means nothing matched —
+ *         that is a successful response, not a 404.
+ *       properties:
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/VolunteerSummary'
+ *         pagination:
+ *           $ref: '#/components/schemas/Pagination'
+ *
  *     VolunteerCreateRequest:
  *       type: object
  *       required: [firstName, lastName, username, password, email]
@@ -306,7 +356,7 @@
  *         - $ref: '#/components/schemas/ErrorResponse'
  *       example:
  *         status: 400
- *         message: "Email: Invalid Email address"
+ *         message: "email: Invalid email address"
  *     UnauthorizedError:
  *       allOf:
  *         - $ref: '#/components/schemas/ErrorResponse'
