@@ -15,8 +15,8 @@ const DUMMY_HASH = "$2b$12$aqTPEjiJtoQ2n0xfCzZInubuBFIBe4U3pECx.mKwd2icyHLU0Wute
  * @openapi
  * /users/register:
  *   post:
- *     summary: Register a new user
- *     description: Creates a new user account. Passwords are hashed with bcrypt before storage; the password is never returned.
+ *     summary: Register a new administrator
+ *     description: Creates a new administrator account. Passwords are hashed with bcrypt before storage; the password is never returned.
  *     tags: [Users]
  *     requestBody:
  *       required: true
@@ -32,13 +32,13 @@ const DUMMY_HASH = "$2b$12$aqTPEjiJtoQ2n0xfCzZInubuBFIBe4U3pECx.mKwd2icyHLU0Wute
  *             schema:
  *               $ref: '#/components/schemas/User'
  *       400:
- *         description: Missing or invalid name, email, or password
+ *         description: Missing or invalid name, username, or password
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/BadRequestError'
  *       409:
- *         description: Email is already registered
+ *         description: That username is already taken
  *         content:
  *           application/json:
  *             schema:
@@ -51,12 +51,12 @@ const DUMMY_HASH = "$2b$12$aqTPEjiJtoQ2n0xfCzZInubuBFIBe4U3pECx.mKwd2icyHLU0Wute
  *               $ref: '#/components/schemas/ServerError'
  */
 router.post("/register", validateBody(userRegisterSchema), async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, username, password } = req.body;
 
   const hash = await bcrypt.hash(password, SALT_ROUNDS);
 
   const createdUser = await prisma.user.create({
-    data: { name, email, password: hash },
+    data: { name, username, password: hash },
     omit: { password: true },
   });
 
@@ -67,8 +67,8 @@ router.post("/register", validateBody(userRegisterSchema), async (req, res) => {
  * @openapi
  * /users/login:
  *   post:
- *     summary: Log in a user
- *     description: Verifies email and password, then returns a signed JWT (60 minute expiry) for use as a Bearer token on protected routes.
+ *     summary: Log in an administrator
+ *     description: Verifies username and password, then returns a signed JWT (60 minute expiry) for use as a Bearer token on protected routes.
  *     tags: [Users]
  *     requestBody:
  *       required: true
@@ -84,13 +84,13 @@ router.post("/register", validateBody(userRegisterSchema), async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/LoginResponse'
  *       400:
- *         description: Email and password are required
+ *         description: Username and password are required
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/BadRequestError'
  *       401:
- *         description: Invalid email or password
+ *         description: Invalid username or password
  *         content:
  *           application/json:
  *             schema:
@@ -103,29 +103,30 @@ router.post("/register", validateBody(userRegisterSchema), async (req, res) => {
  *               $ref: '#/components/schemas/ServerError'
  */
 router.post("/login", loginLimiter, validateBody(userLoginSchema), async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
   const user = await prisma.user.findUnique({
-    where: { email },
+    where: { username },
     select: {
       id: true,
       name: true,
-      email: true,
+      username: true,
       password: true,
     },
   });
 
-  //we want to run this function even if the email is completely invalid (user will be undefined, so we need a fake hash to compare to)
-  //WITHOUT this: someone could see whether or not an email is valid based on response time
+  // Compare against a dummy hash when no user is found so both paths take the
+  // same time. Returning early here would let an attacker discover which
+  // usernames exist by measuring response times.
   const valid = await bcrypt.compare(password, user?.password ?? DUMMY_HASH);
 
   if (!user || !valid) {
-    throw Unauthorized("Invalid email or password");
+    throw Unauthorized("Invalid username or password");
   }
 
   const myUserClaim: JWTClaim = {
     id: user.id,
-    email: user.email,
+    username: user.username,
     name: user.name,
   };
 

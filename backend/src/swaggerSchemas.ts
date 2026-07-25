@@ -4,6 +4,7 @@
  *   schemas:
  *     User:
  *       type: object
+ *       description: An administrator account.
  *       properties:
  *         id:
  *           type: integer
@@ -11,21 +12,20 @@
  *         name:
  *           type: string
  *           example: "Jane Doe"
- *         email:
+ *         username:
  *           type: string
- *           format: email
- *           example: "jane.doe@example.com"
+ *           example: "jdoe"
  *     RegisterRequest:
  *       type: object
- *       required: [name, email, password]
+ *       required: [name, username, password]
  *       properties:
  *         name:
  *           type: string
  *           example: "Jane Doe"
- *         email:
+ *         username:
  *           type: string
- *           format: email
- *           example: "jane.doe@example.com"
+ *           minLength: 3
+ *           example: "jdoe"
  *         password:
  *           type: string
  *           format: password
@@ -33,12 +33,11 @@
  *           example: "correcthorsebatterystaple"
  *     LoginRequest:
  *       type: object
- *       required: [email, password]
+ *       required: [username, password]
  *       properties:
- *         email:
+ *         username:
  *           type: string
- *           format: email
- *           example: "jane.doe@example.com"
+ *           example: "jdoe"
  *         password:
  *           type: string
  *           format: password
@@ -356,13 +355,13 @@
  *         - $ref: '#/components/schemas/ErrorResponse'
  *       example:
  *         status: 400
- *         message: "email: Invalid email address"
+ *         message: "username: must be at least 3 characters"
  *     UnauthorizedError:
  *       allOf:
  *         - $ref: '#/components/schemas/ErrorResponse'
  *       example:
  *         status: 401
- *         message: "Invalid email or password"
+ *         message: "Invalid username or password"
  *     NotFoundError:
  *       allOf:
  *         - $ref: '#/components/schemas/ErrorResponse'
@@ -374,7 +373,7 @@
  *         - $ref: '#/components/schemas/ErrorResponse'
  *       example:
  *         status: 409
- *         message: "That email is already in use"
+ *         message: "That username is already in use"
  *     ServerError:
  *       allOf:
  *         - $ref: '#/components/schemas/ErrorResponse'

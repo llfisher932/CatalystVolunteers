@@ -33,9 +33,7 @@ describe("POST /users/register", () => {
     let res: Response;
 
     beforeEach(async () => {
-      res = await request(app)
-        .post("/users/register")
-        .send({ name: "Jane", email: "jane@example.com", password: "short" });
+      res = await request(app).post("/users/register").send({ name: "Jane", username: "jdoe", password: "short" });
     });
 
     it("returns 400", () => {
@@ -49,20 +47,20 @@ describe("POST /users/register", () => {
     });
   });
 
-  describe("when the email is invalid", () => {
+  describe("when the username is too short", () => {
     let res: Response;
 
     beforeEach(async () => {
       res = await request(app)
         .post("/users/register")
-        .send({ name: "Jane", email: "not-an-email", password: "longEnough123" });
+        .send({ name: "Jane", username: "jd", password: "longEnough123" });
     });
 
     it("returns 400", () => {
       expect(res.status).toBe(400);
     });
     it("includes a helpful error message", () => {
-      expect(res.body.message).toMatch(/valid email/);
+      expect(res.body.message).toMatch(/at least 3/);
     });
     it("does not create a user", () => {
       expect(prisma.user.create).not.toHaveBeenCalled();
@@ -73,7 +71,7 @@ describe("POST /users/register", () => {
     let res: Response;
 
     beforeEach(async () => {
-      res = await request(app).post("/users/register").send({ email: "jane@example.com", password: "longEnough123" });
+      res = await request(app).post("/users/register").send({ username: "jdoe", password: "longEnough123" });
     });
 
     it("returns 400", () => {
@@ -87,7 +85,7 @@ describe("POST /users/register", () => {
     });
   });
 
-  describe("when the email already exists", () => {
+  describe("when the username already exists", () => {
     let res: Response;
 
     beforeEach(async () => {
@@ -95,14 +93,14 @@ describe("POST /users/register", () => {
 
       res = await request(app)
         .post("/users/register")
-        .send({ name: "Jane", email: "jane@example.com", password: "longEnough123" });
+        .send({ name: "Jane", username: "jdoe", password: "longEnough123" });
     });
 
     it("returns 409", () => {
       expect(res.status).toBe(409);
     });
-    it("reports the email as already registered", () => {
-      expect(res.body.message).toMatch(/That value is already in use/i);
+    it("reports the username as already taken", () => {
+      expect(res.body.message).toMatch(/already in use/i);
     });
     it("attempted to create the user", () => {
       expect(prisma.user.create).toHaveBeenCalledTimes(1);
@@ -116,22 +114,26 @@ describe("POST /users/register", () => {
       (prisma.user.create as any).mockResolvedValue({
         id: 1,
         name: "Jane",
-        email: "jane@example.com",
+        username: "jdoe",
       });
 
       res = await request(app)
         .post("/users/register")
-        .send({ name: "Jane", email: "jane@example.com", password: "longEnough123" });
+        .send({ name: "Jane", username: "jdoe", password: "longEnough123" });
     });
 
     it("returns 201", () => {
       expect(res.status).toBe(201);
     });
     it("returns the created user without the password", () => {
-      expect(res.body).toEqual({ id: 1, name: "Jane", email: "jane@example.com" });
+      expect(res.body).toEqual({ id: 1, name: "Jane", username: "jdoe" });
     });
     it("created exactly one user", () => {
       expect(prisma.user.create).toHaveBeenCalledTimes(1);
+    });
+    it("lowercases the username", () => {
+      const { data } = (prisma.user.create as any).mock.calls[0][0];
+      expect(data.username).toBe("jdoe");
     });
   });
 });
@@ -141,7 +143,7 @@ describe("POST /users/login", () => {
     let res: Response;
 
     beforeEach(async () => {
-      res = await request(app).post("/users/login").send({ email: "jane@example.com" });
+      res = await request(app).post("/users/login").send({ username: "jdoe" });
     });
 
     it("returns 400", () => {
@@ -158,7 +160,7 @@ describe("POST /users/login", () => {
     beforeEach(async () => {
       (prisma.user.findUnique as any).mockResolvedValue(null);
 
-      res = await request(app).post("/users/login").send({ email: "nobody@example.com", password: "whatever123" });
+      res = await request(app).post("/users/login").send({ username: "nobody", password: "whatever123" });
     });
 
     it("returns 401", () => {
@@ -179,11 +181,11 @@ describe("POST /users/login", () => {
       (prisma.user.findUnique as any).mockResolvedValue({
         id: 1,
         name: "Jane",
-        email: "jane@example.com",
+        username: "jdoe",
         password: realHash,
       });
 
-      res = await request(app).post("/users/login").send({ email: "jane@example.com", password: "wrong-password" });
+      res = await request(app).post("/users/login").send({ username: "jdoe", password: "wrong-password" });
     });
 
     it("returns 401", () => {
@@ -204,11 +206,11 @@ describe("POST /users/login", () => {
       (prisma.user.findUnique as any).mockResolvedValue({
         id: 1,
         name: "Jane",
-        email: "jane@example.com",
+        username: "jdoe",
         password: realHash,
       });
 
-      res = await request(app).post("/users/login").send({ email: "jane@example.com", password: "correct-password" });
+      res = await request(app).post("/users/login").send({ username: "jdoe", password: "correct-password" });
     });
 
     it("returns 200", () => {
