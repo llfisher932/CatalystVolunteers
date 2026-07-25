@@ -1,4 +1,3 @@
-// src/middleware/errors.ts
 import type { Request, Response, NextFunction } from "express";
 
 /**
@@ -60,7 +59,8 @@ export function errorHandler(error: any, _req: Request, res: Response, _next: Ne
   if (typeof error?.status === "number" && error.expose) {
     return res.status(error.status).json({ status: error.status, message: "Malformed request body" });
   }
-  // Anything else is a genuine server error. Log it; don't leak it.
+
+  // Anything else is a genuine server error.
   console.error("Unhandled error:", error);
   return res.status(500).json({ status: 500, message: "An error occurred" });
 }
