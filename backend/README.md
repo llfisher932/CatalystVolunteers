@@ -43,6 +43,16 @@ http://localhost:3000/api-docs
 
 **The server must be running** (`npm run dev`) to view them — the docs are served by the app itself, so they aren't available as a static page. Once the server is up, open that URL in your browser to see all endpoints, request/response schemas, and a "Try it out" feature for testing routes live.
 
+## A note on `/users/register`
+
+This endpoint is intentionally left unauthenticated so the app can be evaluated
+without seeding credentials.
+
+In production this would be closed one of two ways: put `RequiresAuth` on the
+route so administrators invite other administrators, or add a role to the user
+model so self-registered accounts start without admin rights and must be promoted.
+Either is a small change in `user.router.ts`.
+
 ## Environment Variables
 
 Create a `.env` file in the `backend/` root with the following:
