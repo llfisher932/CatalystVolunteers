@@ -11,57 +11,58 @@ const router = express.Router();
 const SALT_ROUNDS = 12;
 const DUMMY_HASH = "$2b$12$aqTPEjiJtoQ2n0xfCzZInubuBFIBe4U3pECx.mKwd2icyHLU0Wute";
 
-/**
- * @openapi
- * /users/register:
- *   post:
- *     summary: Register a new administrator
- *     description: Creates a new administrator account. Passwords are hashed with bcrypt before storage; the password is never returned.
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/RegisterRequest'
- *     responses:
- *       201:
- *         description: User created successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       400:
- *         description: Missing or invalid name, username, or password
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/BadRequestError'
- *       409:
- *         description: That username is already taken
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ConflictError'
- *       500:
- *         description: Unexpected server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ServerError'
- */
-router.post("/register", validateBody(userRegisterSchema), async (req, res) => {
-  const { name, username, password } = req.body;
+// IMPORTANT: register endpoint is here to be re enabled if we want to create new admins, but it is disabled as we already have an account set up.
+// /**
+//  * @openapi
+//  * /users/register:
+//  *   post:
+//  *     summary: Register a new administrator
+//  *     description: Creates a new administrator account. Passwords are hashed with bcrypt before storage; the password is never returned.
+//  *     tags: [Users]
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             $ref: '#/components/schemas/RegisterRequest'
+//  *     responses:
+//  *       201:
+//  *         description: User created successfully
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               $ref: '#/components/schemas/User'
+//  *       400:
+//  *         description: Missing or invalid name, username, or password
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               $ref: '#/components/schemas/BadRequestError'
+//  *       409:
+//  *         description: That username is already taken
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               $ref: '#/components/schemas/ConflictError'
+//  *       500:
+//  *         description: Unexpected server error
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               $ref: '#/components/schemas/ServerError'
+//  */
+// router.post("/register", validateBody(userRegisterSchema), async (req, res) => {
+//   const { name, username, password } = req.body;
 
-  const hash = await bcrypt.hash(password, SALT_ROUNDS);
+//   const hash = await bcrypt.hash(password, SALT_ROUNDS);
 
-  const createdUser = await prisma.user.create({
-    data: { name, username, password: hash },
-    omit: { password: true },
-  });
+//   const createdUser = await prisma.user.create({
+//     data: { name, username, password: hash },
+//     omit: { password: true },
+//   });
 
-  return res.status(201).json(createdUser);
-});
+//   return res.status(201).json(createdUser);
+// });
 
 /**
  * @openapi
