@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "../lib/useAuth";
 import { login as loginRequest, ApiError } from "../lib/api";
 
@@ -9,26 +10,28 @@ const Login = () => {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSubmitting(true);
-
-    try {
-      const token = await loginRequest(username.trim(), password);
+  const loginMutation = useMutation({
+    mutationFn: (credentials: { username: string; password: string }) =>
+      loginRequest(credentials.username, credentials.password),
+    onSuccess: (token) => {
       login(token); // store token in the auth context
       navigate("/"); // redirect to the protected home page
-    } catch (err) {
-      // Show the server's message (e.g. "Invalid username or password"), or a
-      // generic fallback for anything unexpected.
-      setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+    },
+  });
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    loginMutation.mutate({ username: username.trim(), password });
   };
+
+  // Show the server's message (e.g. "Invalid username or password"), or a
+  // generic fallback for anything unexpected.
+  const error =
+    loginMutation.error &&
+    (loginMutation.error instanceof ApiError
+      ? loginMutation.error.message
+      : "Something went wrong. Please try again.");
 
   return (
     <div className="w-full flex justify-center items-center py-16 px-4">
@@ -79,10 +82,10 @@ const Login = () => {
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={loginMutation.isPending}
           className="mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {submitting ? "Signing in…" : "Sign in"}
+          {loginMutation.isPending ? "Signing in…" : "Sign in"}
         </button>
       </form>
     </div>
