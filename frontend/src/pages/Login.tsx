@@ -15,8 +15,8 @@ const Login = () => {
     mutationFn: (credentials: { username: string; password: string }) =>
       loginRequest(credentials.username, credentials.password),
     onSuccess: (token) => {
-      login(token); // store token in the auth context
-      navigate("/"); // redirect to the protected home page
+      login(token); 
+      navigate("/"); 
     },
   });
 
