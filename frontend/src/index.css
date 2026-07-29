@@ -11,3 +11,41 @@
 body {
   margin: 0;
 }
+
+/* v classes created by Jacob :) v */
+
+.page-header {
+  font-size: 48px;
+  font-weight: bold;
+
+}
+
+.page-flexbox-main {
+  display: flex;
+  justify-content: center;
+  flex-direction:column;
+  text-align: center;
+
+  border-color: gray;
+  border-width: 3px;
+  border-radius: 15px;
+
+  margin: 50px 0px 100px;
+  padding: 2% 1%;
+  min-width: 1000px;
+  min-height: 200px;
+}
+
+.page-flexbox-row {
+  display: flex;
+  justify-content: space-evenly;
+  flex-direction: row;
+  text-align: center;
+
+  border-color: lightgray;
+  border-width: 2px;
+  border-radius: 15px;
+
+  margin: 10px 5px;
+  padding: 2% 1%;
+}
