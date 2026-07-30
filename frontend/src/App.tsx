@@ -5,6 +5,7 @@ import Opportunities from "./pages/Opportunities";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
+import VolAdd from "./pages/VolAdd";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Home />} />
           <Route path="/volunteers" element={<Volunteers />} />
+          <Route path="/volunteers/add" element={<VolAdd />} />
           <Route path="/opportunities" element={<Opportunities />} />
         </Route>
       </Routes>
