@@ -1,16 +1,9 @@
-import {useNavigate} from "react-router-dom";
+import {Link} from "react-router-dom";
 import "../index.css";
 
 const Home = () => {
-  const navigate = useNavigate()
-
-  const gotoVolunteers = () => {
-    navigate("/volunteers")
-  };
-
-  const gotoOpportunities = () => {
-    navigate("/opportunities")
-  };
+  
+  const linkClass = 'mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800'
 
   return (
     <>
@@ -21,18 +14,15 @@ const Home = () => {
           <p>Here you can manage, view, edit, and add to our list of volunteers and the opportunities they are assigned to.</p>
           <br></br>
           <div className="page-flexbox-row">
-            <button 
-            type="button" 
-            className="mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
-            onClick={gotoVolunteers}>
-                  Manage Volunteers
-            </button>
-            <button 
-            type="button" 
-            className="mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
-            onClick={gotoOpportunities}>
-                  Manage Opportunites
-            </button>
+            
+            <Link to="/volunteers"
+            className={linkClass}>
+              Manage Volunteers
+            </Link>
+            <Link to="/opportunities"
+            className={linkClass}>
+              Manage Opportunities
+            </Link>
           </div>
         </div>
       </div>
