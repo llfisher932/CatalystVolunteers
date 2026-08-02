@@ -46,6 +46,19 @@ const VolAdd = () => {
     const [socialSec, setSocialSec] = useState<boolean>(false);
     const [approval, setApproval] = useState("");
 
+    function formCheck() {
+        console.log("A check has initiated!")
+
+        return false
+    }
+
+    function onSend() {
+        console.log("Submit has been clicked!")
+        if (formCheck()) {
+
+        }
+    }
+
   return <div className="w-full flex justify-center items-center py-16 px-4">
         <form
             noValidate
@@ -394,7 +407,8 @@ const VolAdd = () => {
                 Clear Form
                 </button>
                 <button
-                    type="submit"
+                    type="button"
+                    onClick={onSend}
                     className="m-2 flex-1 mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                 Add Volunteer
