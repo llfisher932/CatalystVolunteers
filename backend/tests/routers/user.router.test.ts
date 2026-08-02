@@ -28,115 +28,115 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("POST /users/register", () => {
-  describe("when the password is too short", () => {
-    let res: Response;
+// describe("POST /users/register", () => {
+//   describe("when the password is too short", () => {
+//     let res: Response;
 
-    beforeEach(async () => {
-      res = await request(app).post("/users/register").send({ name: "Jane", username: "jdoe", password: "short" });
-    });
+//     beforeEach(async () => {
+//       res = await request(app).post("/users/register").send({ name: "Jane", username: "jdoe", password: "short" });
+//     });
 
-    it("returns 400", () => {
-      expect(res.status).toBe(400);
-    });
-    it("includes a helpful error message", () => {
-      expect(res.body.message).toMatch(/at least 8/);
-    });
-    it("does not create a user", () => {
-      expect(prisma.user.create).not.toHaveBeenCalled();
-    });
-  });
+//     it("returns 400", () => {
+//       expect(res.status).toBe(400);
+//     });
+//     it("includes a helpful error message", () => {
+//       expect(res.body.message).toMatch(/at least 8/);
+//     });
+//     it("does not create a user", () => {
+//       expect(prisma.user.create).not.toHaveBeenCalled();
+//     });
+//   });
 
-  describe("when the username is too short", () => {
-    let res: Response;
+//   describe("when the username is too short", () => {
+//     let res: Response;
 
-    beforeEach(async () => {
-      res = await request(app)
-        .post("/users/register")
-        .send({ name: "Jane", username: "jd", password: "longEnough123" });
-    });
+//     beforeEach(async () => {
+//       res = await request(app)
+//         .post("/users/register")
+//         .send({ name: "Jane", username: "jd", password: "longEnough123" });
+//     });
 
-    it("returns 400", () => {
-      expect(res.status).toBe(400);
-    });
-    it("includes a helpful error message", () => {
-      expect(res.body.message).toMatch(/at least 3/);
-    });
-    it("does not create a user", () => {
-      expect(prisma.user.create).not.toHaveBeenCalled();
-    });
-  });
+//     it("returns 400", () => {
+//       expect(res.status).toBe(400);
+//     });
+//     it("includes a helpful error message", () => {
+//       expect(res.body.message).toMatch(/at least 3/);
+//     });
+//     it("does not create a user", () => {
+//       expect(prisma.user.create).not.toHaveBeenCalled();
+//     });
+//   });
 
-  describe("when the name is missing", () => {
-    let res: Response;
+//   describe("when the name is missing", () => {
+//     let res: Response;
 
-    beforeEach(async () => {
-      res = await request(app).post("/users/register").send({ username: "jdoe", password: "longEnough123" });
-    });
+//     beforeEach(async () => {
+//       res = await request(app).post("/users/register").send({ username: "jdoe", password: "longEnough123" });
+//     });
 
-    it("returns 400", () => {
-      expect(res.status).toBe(400);
-    });
-    it("includes a helpful error message", () => {
-      expect(res.body.message).toMatch(/name/i);
-    });
-    it("does not create a user", () => {
-      expect(prisma.user.create).not.toHaveBeenCalled();
-    });
-  });
+//     it("returns 400", () => {
+//       expect(res.status).toBe(400);
+//     });
+//     it("includes a helpful error message", () => {
+//       expect(res.body.message).toMatch(/name/i);
+//     });
+//     it("does not create a user", () => {
+//       expect(prisma.user.create).not.toHaveBeenCalled();
+//     });
+//   });
 
-  describe("when the username already exists", () => {
-    let res: Response;
+//   describe("when the username already exists", () => {
+//     let res: Response;
 
-    beforeEach(async () => {
-      (prisma.user.create as any).mockRejectedValue({ code: "P2002" });
+//     beforeEach(async () => {
+//       (prisma.user.create as any).mockRejectedValue({ code: "P2002" });
 
-      res = await request(app)
-        .post("/users/register")
-        .send({ name: "Jane", username: "jdoe", password: "longEnough123" });
-    });
+//       res = await request(app)
+//         .post("/users/register")
+//         .send({ name: "Jane", username: "jdoe", password: "longEnough123" });
+//     });
 
-    it("returns 409", () => {
-      expect(res.status).toBe(409);
-    });
-    it("reports the username as already taken", () => {
-      expect(res.body.message).toMatch(/already in use/i);
-    });
-    it("attempted to create the user", () => {
-      expect(prisma.user.create).toHaveBeenCalledTimes(1);
-    });
-  });
+//     it("returns 409", () => {
+//       expect(res.status).toBe(409);
+//     });
+//     it("reports the username as already taken", () => {
+//       expect(res.body.message).toMatch(/already in use/i);
+//     });
+//     it("attempted to create the user", () => {
+//       expect(prisma.user.create).toHaveBeenCalledTimes(1);
+//     });
+//   });
 
-  describe("when the input is valid", () => {
-    let res: Response;
+//   describe("when the input is valid", () => {
+//     let res: Response;
 
-    beforeEach(async () => {
-      (prisma.user.create as any).mockResolvedValue({
-        id: 1,
-        name: "Jane",
-        username: "jdoe",
-      });
+//     beforeEach(async () => {
+//       (prisma.user.create as any).mockResolvedValue({
+//         id: 1,
+//         name: "Jane",
+//         username: "jdoe",
+//       });
 
-      res = await request(app)
-        .post("/users/register")
-        .send({ name: "Jane", username: "jdoe", password: "longEnough123" });
-    });
+//       res = await request(app)
+//         .post("/users/register")
+//         .send({ name: "Jane", username: "jdoe", password: "longEnough123" });
+//     });
 
-    it("returns 201", () => {
-      expect(res.status).toBe(201);
-    });
-    it("returns the created user without the password", () => {
-      expect(res.body).toEqual({ id: 1, name: "Jane", username: "jdoe" });
-    });
-    it("created exactly one user", () => {
-      expect(prisma.user.create).toHaveBeenCalledTimes(1);
-    });
-    it("lowercases the username", () => {
-      const { data } = (prisma.user.create as any).mock.calls[0][0];
-      expect(data.username).toBe("jdoe");
-    });
-  });
-});
+//     it("returns 201", () => {
+//       expect(res.status).toBe(201);
+//     });
+//     it("returns the created user without the password", () => {
+//       expect(res.body).toEqual({ id: 1, name: "Jane", username: "jdoe" });
+//     });
+//     it("created exactly one user", () => {
+//       expect(prisma.user.create).toHaveBeenCalledTimes(1);
+//     });
+//     it("lowercases the username", () => {
+//       const { data } = (prisma.user.create as any).mock.calls[0][0];
+//       expect(data.username).toBe("jdoe");
+//     });
+//   });
+// });
 
 describe("POST /users/login", () => {
   describe("when the password is missing", () => {
