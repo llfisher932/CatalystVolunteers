@@ -1,11 +1,18 @@
 import { z } from "zod";
 
-export const APPROVAL_STATUSES = ["PENDING", "APPROVED", "DISAPPROVED", "INACTIVE"] as const;
+export const APPROVAL_STATUSES = [
+  "PENDING",
+  "APPROVED",
+  "DISAPPROVED",
+  "INACTIVE",
+] as const;
 
 const trimmed = z.string().trim();
 const optionalString = trimmed.nullish(); // string | null | undefined
 const optionalEmail = z.email().trim().toLowerCase().nullish(); // validated email | null | undefined
 
+// No defaults here because a default on the base leaks into volunteerUpdateSchema,
+// where an omitted field must mean "leave it alone", not "reset it".
 const volunteerBase = z.object({
   firstName: trimmed.min(1, "cannot be empty"),
   lastName: trimmed.min(1, "cannot be empty"),
@@ -19,6 +26,7 @@ const volunteerBase = z.object({
   educationalBackground: optionalString,
   currentLicenses: optionalString,
   skills: z.array(trimmed),
+  preferredCenters: z.array(trimmed),
   availability: optionalString,
   emergencyName: optionalString,
   emergencyHomePhone: optionalString,
@@ -30,9 +38,10 @@ const volunteerBase = z.object({
   approvalStatus: z.enum(APPROVAL_STATUSES),
 });
 
-// Create: apply defaults for the optional-on-input fields
+//applys default for volunteer creation
 export const volunteerCreateSchema = volunteerBase.extend({
   skills: z.array(trimmed).default([]),
+  preferredCenters: z.array(trimmed).default([]),
   driversLicenseOnFile: z.boolean().default(false),
   socialSecurityOnFile: z.boolean().default(false),
   approvalStatus: z.enum(APPROVAL_STATUSES).default("PENDING"),
@@ -41,7 +50,11 @@ export const volunteerCreateSchema = volunteerBase.extend({
 // Update: Base schema but everything is optional
 export const volunteerUpdateSchema = volunteerBase.partial();
 
-export const VOLUNTEER_FILTERS = ["DEFAULT", "ALL", ...APPROVAL_STATUSES] as const;
+export const VOLUNTEER_FILTERS = [
+  "DEFAULT",
+  "ALL",
+  ...APPROVAL_STATUSES,
+] as const;
 
 export const volunteerQuerySchema = z.object({
   // Search across name, username, email, and skills

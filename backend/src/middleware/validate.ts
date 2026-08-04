@@ -3,7 +3,9 @@ import type { ZodType } from "zod";
 import { BadRequest } from "./errors.js";
 
 /** Turns the first Zod issue into a readable "field: problem" message. */
-const firstIssueMessage = (error: { issues: { path: PropertyKey[]; message: string }[] }): string => {
+const firstIssueMessage = (error: {
+  issues: { path: PropertyKey[]; message: string }[];
+}): string => {
   const issue = error.issues[0];
   if (!issue) {
     return "Invalid request";
@@ -50,3 +52,5 @@ export const validateQuery =
     res.locals.query = result.data;
     next();
   };
+// I left some pretty heavy comments in here because there is a lot of logic happening
+// which is instrumental to how we parse input from the client.

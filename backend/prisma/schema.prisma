@@ -35,7 +35,7 @@ model Volunteer {
   educationalBackground String?
   currentLicenses       String?
   skills                String[] // Skills/Interests
-  availability          String? // Availability times — see notes
+  availability          String? // free text for now; would need a structured model if it ever drives matching
   approvalStatus        ApprovalStatus @default(PENDING)
 
   // Emergency contact
@@ -49,9 +49,34 @@ model Volunteer {
   driversLicenseOnFile Boolean @default(false)
   socialSecurityOnFile Boolean @default(false)
 
-  //preferredCenters Center[] @relation("VolunteerPreferredCenters")
-  //matches          Match[]
+  preferredCenters String[] // arbitrary location names, not a managed entity
+  matches          Match[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Opportunity {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  skills      String[]
+  center      String
+  matches     Match[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([center]) //index to help the two filter options specified in docs
+  @@index([createdAt])
+}
+
+model Match {
+  volunteerId   Int
+  opportunityId Int
+  volunteer     Volunteer   @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  matchedAt     DateTime    @default(now())
+
+  @@id([volunteerId, opportunityId]) // composite primary key
+  @@index([opportunityId])
 }

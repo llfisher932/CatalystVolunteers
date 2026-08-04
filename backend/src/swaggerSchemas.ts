@@ -104,6 +104,12 @@
  *           items:
  *             type: string
  *           example: ["tutoring", "food service"]
+ *         preferredCenters:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Free-text center names where the volunteer prefers to work
+ *           example: ["Downtown", "Northside"]
  *         availability:
  *           type: string
  *           nullable: true
@@ -169,7 +175,7 @@
  *           example: 25
  *         total:
  *           type: integer
- *           description: Total number of volunteers matching the filter and search
+ *           description: Total number of records matching the filter and search
  *           example: 42
  *         totalPages:
  *           type: integer
@@ -236,7 +242,15 @@
  *           type: array
  *           items:
  *             type: string
+ *           default: []
  *           example: ["tutoring", "food service"]
+ *         preferredCenters:
+ *           type: array
+ *           items:
+ *             type: string
+ *           default: []
+ *           description: Optional on creation; typically added later via update.
+ *           example: ["Downtown", "Northside"]
  *         availability:
  *           type: string
  *           example: "Weekday evenings, Saturday mornings"
@@ -273,7 +287,8 @@
  *       description: >
  *         Partial update — send only the fields you want to change. Omitted fields
  *         are left untouched. Required fields may be omitted, but cannot be set to
- *         an empty value. Supplying a password re-hashes it.
+ *         an empty value. Supplying a password re-hashes it. Sending an empty array
+ *         for skills or preferredCenters clears them.
  *       properties:
  *         firstName:
  *           type: string
@@ -317,6 +332,11 @@
  *           items:
  *             type: string
  *           example: ["tutoring", "driving"]
+ *         preferredCenters:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["Downtown"]
  *         availability:
  *           type: string
  *           nullable: true
@@ -342,6 +362,96 @@
  *           type: boolean
  *         approvalStatus:
  *           $ref: '#/components/schemas/ApprovalStatus'
+ *
+ *     Opportunity:
+ *       type: object
+ *       description: A volunteer opportunity offered at a center.
+ *       properties:
+ *         id:
+ *           type: integer
+ *           example: 1
+ *         title:
+ *           type: string
+ *           example: "Weekend food bank shift"
+ *         description:
+ *           type: string
+ *           nullable: true
+ *           example: "Sorting and packing donations, 9am-1pm"
+ *         skills:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["food service", "heavy lifting"]
+ *         center:
+ *           type: string
+ *           description: Free-text center name
+ *           example: "Downtown"
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           example: "2026-07-15T14:30:00.000Z"
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           example: "2026-07-15T14:30:00.000Z"
+ *
+ *     OpportunityListResponse:
+ *       type: object
+ *       description: >
+ *         A page of opportunities. An empty `data` array means nothing matched —
+ *         that is a successful response, not a 404.
+ *       properties:
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Opportunity'
+ *         pagination:
+ *           $ref: '#/components/schemas/Pagination'
+ *
+ *     OpportunityCreateRequest:
+ *       type: object
+ *       required: [title, center]
+ *       description: >
+ *         Fields for creating an opportunity. Optional string fields are trimmed.
+ *       properties:
+ *         title:
+ *           type: string
+ *           example: "Weekend food bank shift"
+ *         description:
+ *           type: string
+ *           example: "Sorting and packing donations, 9am-1pm"
+ *         skills:
+ *           type: array
+ *           items:
+ *             type: string
+ *           default: []
+ *           example: ["food service", "heavy lifting"]
+ *         center:
+ *           type: string
+ *           example: "Downtown"
+ *
+ *     OpportunityUpdateRequest:
+ *       type: object
+ *       description: >
+ *         Partial update — send only the fields you want to change. Omitted fields
+ *         are left untouched. Required fields may be omitted, but cannot be set to
+ *         an empty value.
+ *       properties:
+ *         title:
+ *           type: string
+ *           example: "Weekday food bank shift"
+ *         description:
+ *           type: string
+ *           nullable: true
+ *           example: "Sorting and packing donations, 1pm-5pm"
+ *         skills:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["food service"]
+ *         center:
+ *           type: string
+ *           example: "Northside"
  *
  *     ErrorResponse:
  *       type: object
