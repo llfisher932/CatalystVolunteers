@@ -1,7 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import React from "react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { WithContext as ReactTags, SEPARATORS, type Tag} from 'react-tag-input';
+import { type VolunteerCreateInput } from "../schemas/volunteer.schema.ts";
 
 const VolAdd = () => {
 
@@ -145,8 +147,9 @@ const VolAdd = () => {
 
                     Volunteering Information
                     <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-                        Skills and Interests (this needs to get replaced with something custom)
+                        Skills and Interests
                         <ReactTags
+                            tags={skills}
                             id="skills"
                             separators={[SEPARATORS.ENTER]}
                             handleDelete={handleDelete}
@@ -154,8 +157,12 @@ const VolAdd = () => {
                             onTagUpdate={onTagUpdate}
                             inputFieldPosition="top"
                             placeholder="Press enter to submit"
-                            editable
                             maxTags={8}
+                            classNames={{
+                                tag: 'rounded-lg bg-emerald-400 border-green-600 px-2 py-0 mx-1 ',
+                                tagInputField: 'rounded-lg border border-gray-300 px-3 py-2 mb-1 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200',
+                                remove: 'pl-1',
+                            }}
                         />
                     </label>
 
