@@ -57,7 +57,7 @@ const VolunteerForm = () => {
     mode: "onBlur",
   });
 
-  const onSubmit = async (data: VolunteerFormInput) => {
+  const submitForm = async (data: VolunteerFormInput) => {
     setSubmitError(null);
     setSuccess(false);
 
@@ -88,7 +88,7 @@ const VolunteerForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-2xl space-y-6 p-6">
+    <form onSubmit={handleSubmit(submitForm)} className="mx-auto max-w-2xl space-y-6 p-6">
       <h1 className="text-2xl font-semibold">Add a Volunteer</h1>
 
       {submitError && <p className="rounded bg-red-50 p-3 text-red-700">{submitError}</p>}
