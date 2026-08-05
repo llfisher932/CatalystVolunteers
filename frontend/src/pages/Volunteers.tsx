@@ -3,10 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { z } from "zod";
 import { useAuth } from "../lib/useAuth";
-import {
-  volunteerCreateSchema,
-  APPROVAL_STATUSES,
-} from "../schemas/volunteer.schema";
+import { volunteerCreateSchema, APPROVAL_STATUSES } from "../schemas/volunteer.schema";
 
 /**
  * The array fields are entered as comma-separated text, so the form's shape
@@ -29,15 +26,9 @@ const splitList = (value: string | undefined): string[] =>
 
 /** Empty inputs arrive as "", which would be stored instead of leaving the column null. */
 const blankToUndefined = (data: Record<string, unknown>) =>
-  Object.fromEntries(
-    Object.entries(data).map(([key, value]) => [
-      key,
-      value === "" ? undefined : value,
-    ]),
-  );
+  Object.fromEntries(Object.entries(data).map(([key, value]) => [key, value === "" ? undefined : value]));
 
-const inputClass =
-  "w-full rounded-md border border-gray-300 px-3 py-2 focus:border-emerald-600 focus:outline-none";
+const inputClass = "w-full rounded-md border border-gray-300 px-3 py-2 focus:border-emerald-600 focus:outline-none";
 const labelClass = "block text-sm font-medium text-gray-700";
 const errorClass = "mt-1 text-sm text-red-600";
 const sectionClass = "space-y-4 border-t border-gray-200 pt-6";
@@ -63,7 +54,7 @@ const VolunteerForm = () => {
       socialSecurityOnFile: false,
       approvalStatus: "PENDING",
     },
-    mode: "onBlur"
+    mode: "onBlur",
   });
 
   const onSubmit = async (data: VolunteerFormInput) => {
@@ -97,20 +88,11 @@ const VolunteerForm = () => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="mx-auto max-w-2xl space-y-6 p-6"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-2xl space-y-6 p-6">
       <h1 className="text-2xl font-semibold">Add a Volunteer</h1>
 
-      {submitError && (
-        <p className="rounded bg-red-50 p-3 text-red-700">{submitError}</p>
-      )}
-      {success && (
-        <p className="rounded bg-emerald-50 p-3 text-emerald-700">
-          Volunteer created.
-        </p>
-      )}
+      {submitError && <p className="rounded bg-red-50 p-3 text-red-700">{submitError}</p>}
+      {success && <p className="rounded bg-emerald-50 p-3 text-emerald-700">Volunteer created.</p>}
 
       <div className="space-y-4">
         <h2 className={sectionHeadingClass}>Account</h2>
@@ -119,57 +101,32 @@ const VolunteerForm = () => {
           <label className={labelClass} htmlFor="firstName">
             First name
           </label>
-          <input
-            id="firstName"
-            className={inputClass}
-            {...register("firstName")}
-          />
-          {errors.firstName && (
-            <p className={errorClass}>{errors.firstName.message}</p>
-          )}
+          <input id="firstName" className={inputClass} {...register("firstName")} />
+          {errors.firstName && <p className={errorClass}>{errors.firstName.message}</p>}
         </div>
 
         <div>
           <label className={labelClass} htmlFor="lastName">
             Last name
           </label>
-          <input
-            id="lastName"
-            className={inputClass}
-            {...register("lastName")}
-          />
-          {errors.lastName && (
-            <p className={errorClass}>{errors.lastName.message}</p>
-          )}
+          <input id="lastName" className={inputClass} {...register("lastName")} />
+          {errors.lastName && <p className={errorClass}>{errors.lastName.message}</p>}
         </div>
 
         <div>
           <label className={labelClass} htmlFor="username">
             Username
           </label>
-          <input
-            id="username"
-            className={inputClass}
-            {...register("username")}
-          />
-          {errors.username && (
-            <p className={errorClass}>{errors.username.message}</p>
-          )}
+          <input id="username" className={inputClass} {...register("username")} />
+          {errors.username && <p className={errorClass}>{errors.username.message}</p>}
         </div>
 
         <div>
           <label className={labelClass} htmlFor="password">
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            className={inputClass}
-            {...register("password")}
-          />
-          {errors.password && (
-            <p className={errorClass}>{errors.password.message}</p>
-          )}
+          <input id="password" type="password" className={inputClass} {...register("password")} />
+          {errors.password && <p className={errorClass}>{errors.password.message}</p>}
         </div>
       </div>
 
@@ -180,12 +137,7 @@ const VolunteerForm = () => {
           <label className={labelClass} htmlFor="email">
             Email
           </label>
-          <input
-            id="email"
-            type="email"
-            className={inputClass}
-            {...register("email")}
-          />
+          <input id="email" type="email" className={inputClass} {...register("email")} />
           {errors.email && <p className={errorClass}>{errors.email.message}</p>}
         </div>
 
@@ -194,9 +146,7 @@ const VolunteerForm = () => {
             Address
           </label>
           <input id="address" className={inputClass} {...register("address")} />
-          {errors.address && (
-            <p className={errorClass}>{errors.address.message}</p>
-          )}
+          {errors.address && <p className={errorClass}>{errors.address.message}</p>}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -204,31 +154,19 @@ const VolunteerForm = () => {
             <label className={labelClass} htmlFor="homePhone">
               Home phone
             </label>
-            <input
-              id="homePhone"
-              className={inputClass}
-              {...register("homePhone")}
-            />
+            <input id="homePhone" className={inputClass} {...register("homePhone")} />
           </div>
           <div>
             <label className={labelClass} htmlFor="workPhone">
               Work phone
             </label>
-            <input
-              id="workPhone"
-              className={inputClass}
-              {...register("workPhone")}
-            />
+            <input id="workPhone" className={inputClass} {...register("workPhone")} />
           </div>
           <div>
             <label className={labelClass} htmlFor="cellPhone">
               Cell phone
             </label>
-            <input
-              id="cellPhone"
-              className={inputClass}
-              {...register("cellPhone")}
-            />
+            <input id="cellPhone" className={inputClass} {...register("cellPhone")} />
           </div>
         </div>
       </div>
@@ -240,12 +178,7 @@ const VolunteerForm = () => {
           <label className={labelClass} htmlFor="skills">
             Skills / interests
           </label>
-          <input
-            id="skills"
-            className={inputClass}
-            placeholder="tutoring, food service"
-            {...register("skills")}
-          />
+          <input id="skills" className={inputClass} placeholder="tutoring, food service" {...register("skills")} />
           <p className="mt-1 text-sm text-gray-500">Separate with commas.</p>
         </div>
 
@@ -282,22 +215,14 @@ const VolunteerForm = () => {
           <label className={labelClass} htmlFor="educationalBackground">
             Educational background
           </label>
-          <input
-            id="educationalBackground"
-            className={inputClass}
-            {...register("educationalBackground")}
-          />
+          <input id="educationalBackground" className={inputClass} {...register("educationalBackground")} />
         </div>
 
         <div>
           <label className={labelClass} htmlFor="currentLicenses">
             Current licenses
           </label>
-          <input
-            id="currentLicenses"
-            className={inputClass}
-            {...register("currentLicenses")}
-          />
+          <input id="currentLicenses" className={inputClass} {...register("currentLicenses")} />
         </div>
       </div>
 
@@ -308,11 +233,7 @@ const VolunteerForm = () => {
           <label className={labelClass} htmlFor="emergencyName">
             Name
           </label>
-          <input
-            id="emergencyName"
-            className={inputClass}
-            {...register("emergencyName")}
-          />
+          <input id="emergencyName" className={inputClass} {...register("emergencyName")} />
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -320,21 +241,13 @@ const VolunteerForm = () => {
             <label className={labelClass} htmlFor="emergencyHomePhone">
               Home phone
             </label>
-            <input
-              id="emergencyHomePhone"
-              className={inputClass}
-              {...register("emergencyHomePhone")}
-            />
+            <input id="emergencyHomePhone" className={inputClass} {...register("emergencyHomePhone")} />
           </div>
           <div>
             <label className={labelClass} htmlFor="emergencyWorkPhone">
               Work phone
             </label>
-            <input
-              id="emergencyWorkPhone"
-              className={inputClass}
-              {...register("emergencyWorkPhone")}
-            />
+            <input id="emergencyWorkPhone" className={inputClass} {...register("emergencyWorkPhone")} />
           </div>
         </div>
 
@@ -342,26 +255,15 @@ const VolunteerForm = () => {
           <label className={labelClass} htmlFor="emergencyEmail">
             Email
           </label>
-          <input
-            id="emergencyEmail"
-            type="email"
-            className={inputClass}
-            {...register("emergencyEmail")}
-          />
-          {errors.emergencyEmail && (
-            <p className={errorClass}>{errors.emergencyEmail.message}</p>
-          )}
+          <input id="emergencyEmail" type="email" className={inputClass} {...register("emergencyEmail")} />
+          {errors.emergencyEmail && <p className={errorClass}>{errors.emergencyEmail.message}</p>}
         </div>
 
         <div>
           <label className={labelClass} htmlFor="emergencyAddress">
             Address
           </label>
-          <input
-            id="emergencyAddress"
-            className={inputClass}
-            {...register("emergencyAddress")}
-          />
+          <input id="emergencyAddress" className={inputClass} {...register("emergencyAddress")} />
         </div>
       </div>
 
@@ -370,27 +272,19 @@ const VolunteerForm = () => {
 
         <label className="flex items-center gap-2">
           <input type="checkbox" {...register("driversLicenseOnFile")} />
-          <span className="text-sm text-gray-700">
-            Driver's license on file
-          </span>
+          <span className="text-sm text-gray-700">Driver's license on file</span>
         </label>
 
         <label className="flex items-center gap-2">
           <input type="checkbox" {...register("socialSecurityOnFile")} />
-          <span className="text-sm text-gray-700">
-            Social security card on file
-          </span>
+          <span className="text-sm text-gray-700">Social security card on file</span>
         </label>
 
         <div>
           <label className={labelClass} htmlFor="approvalStatus">
             Approval status
           </label>
-          <select
-            id="approvalStatus"
-            className={inputClass}
-            {...register("approvalStatus")}
-          >
+          <select id="approvalStatus" className={inputClass} {...register("approvalStatus")}>
             {APPROVAL_STATUSES.map((status) => (
               <option key={status} value={status}>
                 {status}
@@ -403,8 +297,7 @@ const VolunteerForm = () => {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="rounded-lg bg-emerald-700 px-4 py-2.5 font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
-      >
+        className="rounded-lg bg-emerald-700 px-4 py-2.5 font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60">
         {isSubmitting ? "Creating..." : "Create Volunteer"}
       </button>
     </form>
