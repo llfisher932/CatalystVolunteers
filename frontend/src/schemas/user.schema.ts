@@ -1,5 +1,3 @@
-//This schema will be used by the frontend as well. This file should not be manually copied
-//or edited in the frontend file. Updates should be made here and then synced with npm run sync-schemas
 import { z } from "zod";
 
 const trimmed = z.string().trim();
