@@ -47,7 +47,7 @@ const VolunteerForm = () => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<VolunteerFormInput, any, VolunteerFormOutput>({
+  } = useForm<VolunteerFormInput, unknown, VolunteerFormOutput>({
     resolver: zodResolver(volunteerFormSchema),
     defaultValues: {
       driversLicenseOnFile: false,
