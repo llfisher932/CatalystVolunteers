@@ -1,13 +1,14 @@
 import "../index.css";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../lib/useAuth";
 import VolunteerResult from "../components/VolunteerResult";
 
 
 const Volunteers = () => {
 
-  const [volunteers, setVolunteers] = useState<VolunteerSummary[]>([]);
   const { token } = useAuth();
+
   type VolunteerSummary = {
     id: number;
     firstName: string;
@@ -16,49 +17,50 @@ const Volunteers = () => {
     approvalStatus: string;
   };
 
-  /* Filter Code */
+  type PageSummary = {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+
   const [activeFilter, setActiveFilter] = useState("DEFAULT"); /* filter auto set to APPROVED/PENDING */
 
   const changeFilter = (event: any) => {
-    setActiveFilter(event.target.value)
+    setActiveFilter(event.target.value);
+    setResultsPage(1);
   };
 
-  useEffect(() => {
-    async function getData() {
-      try 
-      {
-        let url = `http://localhost:3000/volunteers?`;
+  const [currentResultsPage, setResultsPage] = useState(1); /* the current results page is auto set to page 1 */
+
+  const changeResultsPage = (event: any) => {
+    setResultsPage(parseInt(event.target.value));
+  };
+
+  const { data, isPending, isError, error } = useQuery({
+    queryKey: ["volunteers", activeFilter, currentResultsPage],
+    queryFn: async (): Promise<{ data: VolunteerSummary[], pagination: PageSummary }> => {
+      const params = new URLSearchParams();
+        
         if(activeFilter !== "DEFAULT")
         {
-          url += `status=${activeFilter}`;
+          params.append("status", activeFilter);
         }
-        /* Search functionality can be added here */
-
-        const response = await fetch(url, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
+        if(currentResultsPage !== 1)
+        {
+          params.append("page", currentResultsPage.toString());
         }
 
-        const json = await response.json();
-        setVolunteers(json.data);
-      } 
-      catch (err: any) 
-      {
-        if (err.name !== "AbortError") {
-          console.log(err);
-        }
-      }
-    }
+      const res = await fetch(`http://localhost:3000/volunteers?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to load volunteers");
+      return res.json();
+    },
+  });
 
-    getData();
-  }, [activeFilter]);
-
+  if (isPending) return <p>Loading...</p>;
+  if (isError) return <p>{error.message}</p>;
 
   return (
     <>
@@ -84,23 +86,33 @@ const Volunteers = () => {
             <h2>Volunteer List</h2>
             <div className="page-flexbox-column">
               <table>
-                <tr>
-                  <th>First Name</th>
-                  <th>Last Name</th>
-                  <th>Email</th>
-                  <th>Approval Status</th>
-                  <th>Edit</th>
-                </tr>
-                {/* Volunteer info is delivered here */}
-                  {volunteers.map((volunteer) => {
-                    return (
-                      <tr key={volunteer.id}>
-                        <VolunteerResult fName={volunteer.firstName} lName={volunteer.lastName} email={volunteer.email} approvalStatus={volunteer.approvalStatus}/>
-                      </tr>
-                    );
-                  })}
-                
+                <thead>
+                  <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Approval Status</th>
+                    <th>Edit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Volunteer info is delivered here */}
+                    {data?.data.map((volunteer) => {
+                      return (
+                        <tr key={volunteer.id}>
+                          <VolunteerResult fName={volunteer.firstName} lName={volunteer.lastName} email={volunteer.email} approvalStatus={volunteer.approvalStatus}/>
+                        </tr>
+                        
+                      );
+                    })}
+                </tbody>
               </table>
+            </div>
+            {/* Page options */}
+            <div className="page-flexbox-row">
+              <button className="link-button" value={currentResultsPage - 1} disabled={currentResultsPage === 1} onClick={changeResultsPage}>Prev</button>
+              <p>Page {currentResultsPage} of {data?.pagination.totalPages}</p>
+              <button className="link-button" value={currentResultsPage + 1} disabled={currentResultsPage === data?.pagination.totalPages || data?.pagination.totalPages === 0} onClick={changeResultsPage}>Next</button>
             </div>
           </div>
         </div>
