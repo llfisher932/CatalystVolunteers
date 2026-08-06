@@ -63,3 +63,15 @@ body {
   margin: 10px 5px;
   padding: 2% 1%;
 }
+
+.link-button{
+  color: forestgreen;
+}
+.link-button:hover:enabled{
+  color: forestgreen;
+  text-decoration: underline;
+  cursor:pointer;
+}
+.link-button:disabled{
+  color: lightgray;
+}
