@@ -7,23 +7,41 @@ const optionalString = trimmed.nullish(); // string | null | undefined
 const optionalEmail = z.email().trim().toLowerCase().nullish(); // validated email | null | undefined
 
 const volunteerBase = z.object({
-  firstName: trimmed.min(1, "cannot be empty"),
-  lastName: trimmed.min(1, "cannot be empty"),
-  username: trimmed.min(1, "cannot be empty"),
-  password: z.string().min(8, "must be at least 8 characters"),
-  email: z.email().trim().toLowerCase(),
+  firstName: trimmed.min(1, "Cannot be empty"),
+  lastName: trimmed.min(1, "Cannot be empty"),
+  username: trimmed.min(1, "Cannot be empty"),
+  password: z.string().min(8, "Must be at least 8 characters"),
+  email: z.email("Improper formatting").trim().toLowerCase(),
   address: optionalString,
-  homePhone: z.optional(z.e164()),
-  workPhone: z.optional(z.e164()),
-  cellPhone: z.optional(z.e164()),
+  homePhone: z.union( [
+      z.literal( '' ),
+      trimmed.min(7, "Number is too short").max(15, "Number is too long"),
+  ] ),
+  workPhone: z.union( [
+      z.literal( '' ),
+      trimmed.min(7, "Number is too short").max(15, "Number is too long"),
+  ] ),
+  cellPhone: z.union( [
+      z.literal( '' ),
+      trimmed.min(7, "Number is too short").max(15, "Number is too long"),
+  ] ),
   educationalBackground: optionalString,
   currentLicenses: optionalString,
   skills: z.array(trimmed),
   availability: optionalString,
   emergencyName: optionalString,
-  emergencyHomePhone: z.optional(z.e164()),
-  emergencyWorkPhone: z.optional(z.e164()),
-  emergencyEmail: optionalEmail,
+  emergencyHomePhone: z.union( [
+      z.literal( '' ),
+      trimmed.min(7, "Number is too short").max(15, "Number is too long"),
+  ] ),
+  emergencyWorkPhone: z.union( [
+      z.literal( '' ),
+      trimmed.min(7, "Number is too short").max(15, "Number is too long"),
+  ] ),
+  emergencyEmail: z.union( [
+      z.literal( '' ),
+      z.email("improper formatting"),
+  ] ),
   emergencyAddress: optionalString,
   driversLicenseOnFile: z.boolean(),
   socialSecurityOnFile: z.boolean(),

@@ -1,11 +1,15 @@
-import { useMutation } from "@tanstack/react-query";
 import React from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { WithContext as ReactTags, SEPARATORS, type Tag} from 'react-tag-input';
-import { type VolunteerCreateInput } from "../schemas/volunteer.schema.ts";
+import { volunteerCreateSchema, APPROVAL_STATUSES } from "../schemas/volunteer.schema.ts";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "../lib/useAuth.ts";
 
 const VolAdd = () => {
+
 
     // Handling the skills tagfield 
     const [skills, setSkills] = React.useState<Array<Tag>>([]);
@@ -25,129 +29,165 @@ const VolAdd = () => {
         console.log("current tags: "+JSON.stringify(skills))
     };
 
-    // all the rest of the vars
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [username, setUsername] = useState("");
-    const [pass1, setPass1] = useState("");
-    const [pass2, setPass2] = useState("");
-    const [availability, setAvailability] = useState("");
-    const [address, setAddress] = useState("");
-    const [cellNum, setCellNum] = useState("");
-    const [homeNum, setHomeNum] = useState("");
-    const [workNum, setWorkNum] = useState("");
-    const [email, setEmail] = useState("");
-    const [eduHis, setEduHis] = useState("");
-    const [licenses, setLicenses] = useState("");
-    const [ecName, setECName] = useState("");
-    const [ecHomeNum, setECHomeNum] = useState("");
-    const [ecWorkNum, setECWorkNum] = useState("");
-    const [ecEmail, setECEmail] = useState("");
-    const [ecAddress, setECAddress] = useState("");
-    const [drivers, setDrivers] = useState<boolean>(false);
-    const [socialSec, setSocialSec] = useState<boolean>(false);
-    const [approval, setApproval] = useState("");
+    //zod work (thanks logan!)
+    const volunteerFormSchema = volunteerCreateSchema.extend({
+        skills: z.string().optional(),
+        preferredCenters: z.string().optional(),
+        confirmPassword: z.string(),
+    }).refine((data) => data.password === data.confirmPassword, {
+        message: "Passwords don't match",
+        path: ["confirmPassword"],
+    });
+    
+    const { token } = useAuth();
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [success, setSuccess] = useState(false);
 
-    function formCheck() {
-        console.log("A check has initiated!")
+    type VolunteerFormInput = z.input<typeof volunteerFormSchema>;
+    type VolunteerFormOutput = z.output<typeof volunteerFormSchema>;
 
-        return false
-    }
+    const splitList = (value: string | undefined): string[] =>
+        value
+            ? value
+                .split(",")
+                .map((item) => item.trim())
+                .filter(Boolean)
+            : [];
 
-    function onSend() {
-        console.log("Submit has been clicked!")
-        if (formCheck()) {
+        const blankToUndefined = (data: Record<string, unknown>) =>
+            Object.fromEntries(Object.entries(data).map(([key, value]) => [key, value === "" ? undefined : value]));
 
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm<VolunteerFormInput, any, VolunteerFormOutput>({
+        resolver: zodResolver(volunteerFormSchema),
+        defaultValues: {
+        driversLicenseOnFile: false,
+        socialSecurityOnFile: false,
+        approvalStatus: "PENDING",
+        },
+        mode: "onBlur",
+    });
+
+    const submitForm = async (data: VolunteerFormInput) => {
+        setSubmitError(null);
+        setSuccess(false);
+
+        // needs to to be addressed so it's tanstack
+        const payload = {
+        ...blankToUndefined(data),
+        skills: splitList(data.skills),
+        preferredCenters: splitList(data.preferredCenters),
+        };
+
+        const res = await fetch("http://localhost:3000/volunteers", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+        // The server catches what the client can't know, like a taken username.
+        const body = await res.json();
+        setSubmitError(body.message ?? "Something went wrong");
+        return;
         }
-    }
+
+        setSuccess(true);
+        reset();
+    };
+
+    //css class stuff
+    const labelClass = "flex flex-col gap-1 text-sm font-medium text-gray-700";
+    const inputClass = "rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200";
+    const errorClass = "text-sm text-red-800";
 
   return <div className="w-full flex justify-center items-center py-16 px-4">
         <form
-            noValidate
+            onSubmit={handleSubmit(submitForm)}
             className="w-full max-w-smx2 flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm"
         >
             <p className="justify-center"><b>Add a Volunteer</b></p>
             <div className="flex">
                 <div className="flex-1 w-md px-3 border-e border-gray-300 space-y-4">
                     Essentials
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                    <label className={labelClass}>
                     <p>First Name <span className="text-red-500">*</span></p>
                     <input
                         type="text"
-                        name="firstname"
-                        autoComplete="firstname"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
+                        autoComplete="firstName"
                         placeholder="Jane"
                         required
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("firstName")}
                     />
+                    {errors.firstName && <p className={errorClass}>{errors.firstName.message}</p>}
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                    <label className={labelClass}>
                     <p>Last Name <span className="text-red-500">*</span></p>
                     <input
                         type="text"
-                        name="lastname"
-                        autoComplete="lastname"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
+                        autoComplete="lastName"
                         placeholder="Doe"
                         required
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("lastName")}
                     />
+                    {errors.lastName && <p className={errorClass}>{errors.lastName.message}</p>}
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                    <label className={labelClass}>
                     <p>Username <span className="text-red-500">*</span></p>
                     <input
                         type="text"
-                        name="username"
                         autoComplete="username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
                         placeholder="Volunteer77"
                         required
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("username")}
                     />
+                    {errors.username && <p className={errorClass}>{errors.username.message}</p>}
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-                    <p>Password <span className="text-red-500">*</span></p>
+                    <label className={labelClass}>
+                    <p>Password<span className="text-red-500">*</span></p>
                     <input
                         type="password"
-                        name="pass1"
-                        autoComplete="pass1"
-                        value={pass1}
-                        onChange={(e) => setPass1(e.target.value)}
                         placeholder="••••••••"
                         required
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("password")}
                     />
+                    {errors.password && <p className={errorClass}>{errors.password.message}</p>}
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-                    <p>Confirm Password <span className="text-red-500">*</span></p>
+                    <label className={labelClass}>
+                    <p>Confirm Password<span className="text-red-500">*</span></p>
                     <input
                         type="password"
-                        name="pass2"
-                        autoComplete="pass2"
-                        value={pass2}
-                        onChange={(e) => setPass2(e.target.value)}
                         placeholder="••••••••"
                         required
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("confirmPassword")}
                     />
+                    {errors.confirmPassword && <p className={errorClass}>{errors.confirmPassword.message}</p>}
                     </label>
 
                     Volunteering Information
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-                        Skills and Interests
+                    <label className={labelClass}>
+                        Skills and Interests DO THIS!!
                         <ReactTags
                             tags={skills}
                             id="skills"
@@ -158,6 +198,7 @@ const VolAdd = () => {
                             inputFieldPosition="top"
                             placeholder="Press enter to submit"
                             maxTags={8}
+                            {...register("skills")}
                             classNames={{
                                 tag: 'rounded-lg bg-emerald-400 border-green-600 px-2 py-0 mx-1 ',
                                 tagInputField: 'rounded-lg border border-gray-300 px-3 py-2 mb-1 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200',
@@ -166,86 +207,72 @@ const VolAdd = () => {
                         />
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                    <label className={labelClass}>
                     Highest Level of Education
                     <input
                         type="text"
-                        name="eduhis"
-                        autoComplete="eduhis"
-                        value={eduHis}
-                        onChange={(e) => setEduHis(e.target.value)}
                         placeholder="B.S. Nursing, UNF"
-                        required
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("educationalBackground")}
                     />
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                    <label className={labelClass}>
                     Current Licenses
                     <input
                         type="text"
-                        name="licenses"
                         autoComplete="licenses"
-                        value={licenses}
-                        onChange={(e) => setLicenses(e.target.value)}
                         placeholder="RN (FL), CPR certified"
-                        required
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("currentLicenses")}
                     />
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                    <label className={labelClass}>
                     Is there a driver's license on record for this volunteer?
                     <input
                         type="checkbox"
-                        id="drivers"
-                        name="drivers"
-                        onClick={(e) => setDrivers(!drivers)}
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        id="driversLicenseOnFile"
+                        className={inputClass}
+                        {...register("driversLicenseOnFile")}
                     />
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                    <label className={labelClass}>
                     Is there a social security number on record for this volunteer?
                     <input
                         type="checkbox"
-                        id="socialSec"
-                        name="socialSec"
-                        onClick={(e) => setSocialSec(!socialSec)}
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        id="socialSecurityOnFIle"
+                        className={inputClass}
+                        {...register("socialSecurityOnFile")}
                     />
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                    <label className={labelClass}>
                     Approval Status
                     <select
-                        name="approval"
-                        id="approval"
-                        value={approval}
-                        onChange={(e) => setApproval(e.target.value)}
+                        id="approvalStatus"
                         className="bg-gray-100"
+                        {...register("approvalStatus")}
                     >
-                        <option value="APPROVED">Approved</option>
                         <option value="PENDING">Pending</option>
+                        <option value="APPROVED">Approved</option>
                         <option value="DISAPPROVED">Disapproved</option>
                         <option value="INACTIVE">Inactive</option>
                     </select>
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                    <label className={labelClass}>
                     Availability
                     <input
                         type="text"
-                        name="availability"
                         autoComplete="availability"
-                        value={availability}
-                        onChange={(e) => setAvailability(e.target.value)}
                         placeholder="Weekday evenings, Saturday mornings"
-                        required
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("availability")}
                     />
                     </label>
                 </div>
@@ -253,154 +280,132 @@ const VolAdd = () => {
                 <div className="flex-1 w-md px-3 space-y-4">
                     Contact Information
                     
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-                    Cell Phone Number
+                    <label className={labelClass}>
+                    <p>Email <span className="text-red-500">*</span></p>
                     <input
                         type="text"
-                        name="cellnum"
-                        autoComplete="cellnum"
-                        value={cellNum}
-                        onChange={(e) => setCellNum(e.target.value)}
-                        placeholder="888-123-4567"
-                        required
-                        autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
-                    />
-                    </label>
-
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-                    Home Phone Number
-                    <input
-                        type="text"
-                        name="homenum"
-                        autoComplete="cellnum"
-                        value={homeNum}
-                        onChange={(e) => setHomeNum(e.target.value)}
-                        placeholder="888-123-4567"
-                        required
-                        autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
-                    />
-                    </label>
-
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-                    Work Phone Number
-                    <input
-                        type="text"
-                        name="worknum"
-                        autoComplete="worknum"
-                        value={workNum}
-                        onChange={(e) => setWorkNum(e.target.value)}
-                        placeholder="888-123-4567"
-                        required
-                        autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
-                    />
-                    </label>
-
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-                    Email (Check Format)
-                    <input
-                        type="text"
-                        name="email"
                         autoComplete="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
                         placeholder="JaneDoe16@Email.com"
                         required
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("email")}
                     />
+                    {errors.email && <p className={errorClass}>{errors.email.message}</p>}
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                    <label className={labelClass}>
+                    Cell Phone Number
+                    <input
+                        type="number"
+                        autoComplete="cellnum"
+                        placeholder="8881234567"
+                        autoFocus
+                        className={inputClass}
+                        {...register("cellPhone")}
+                    />
+                    {errors.cellPhone && <p className={errorClass}>{errors.cellPhone.message}</p>}
+                    </label>
+
+                    <label className={labelClass}>
+                    Home Phone Number
+                    <input
+                        type="number"
+                        autoComplete="cellnum"
+                        placeholder="8881234567"
+                        autoFocus
+                        className={inputClass}
+                        {...register("homePhone")}
+                    />
+                    {errors.homePhone && <p className={errorClass}>{errors.homePhone.message}</p>}
+                    </label>
+
+                    <label className={labelClass}>
+                    Work Phone Number
+                    <input
+                        type="number"
+                        autoComplete="worknum"
+                        placeholder="8881234567"
+                        autoFocus
+                        className={inputClass}
+                        {...register("workPhone")}
+                    />
+                    {errors.workPhone && <p className={errorClass}>{errors.workPhone.message}</p>}
+                    </label>
+
+                    <label className={labelClass}>
                     Address
                     <input
                         type="text"
-                        name="address"
                         autoComplete="address"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
                         placeholder="123 Easy Str."
-                        required
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("address")}
                     />
                     </label>
 
                     Emergency Contact Information
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                    <label className={labelClass}>
                     Emergency Contact Name
                     <input
                         type="text"
-                        name="ecName"
                         autoComplete="ecName"
-                        value={ecName}
-                        onChange={(e) => setECName(e.target.value)}
                         placeholder="John Doe"
-                        required
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("emergencyName")}
                     />
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-                    Emergency Contact Home Phone Number (force format)
+                    <label className={labelClass}>
+                    Emergency Contact Home Phone Number
                     <input
-                        type="text"
-                        name="echomenum"
+                        type="number"
                         autoComplete="echomenum"
-                        value={ecHomeNum}
-                        onChange={(e) => setECHomeNum(e.target.value)}
-                        placeholder="888-123-4567"
-                        required
+                        placeholder="8881234567"
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("emergencyHomePhone")}
                     />
+                    {errors.emergencyHomePhone && <p className={errorClass}>{errors.emergencyHomePhone.message}</p>}
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-                    Emergency Contact Work Phone Number (force format)
+                    <label className={labelClass}>
+                    Emergency Contact Work Phone Number
                     <input
-                        type="text"
-                        name="ecworknum"
+                        type="number"
                         autoComplete="ecworknum"
-                        value={ecWorkNum}
-                        onChange={(e) => setECWorkNum(e.target.value)}
-                        placeholder="888-123-4567"
-                        required
+                        placeholder="8881234567"
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("emergencyWorkPhone")}
                     />
+                    {errors.emergencyWorkPhone && <p className={errorClass}>{errors.emergencyWorkPhone.message}</p>}
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-                    Emergency Contact Email (Force Format)
+                    <label className={labelClass}>
+                    Emergency Contact Email
                     <input
                         type="text"
-                        name="ecemail"
                         autoComplete="ecemail"
-                        value={ecEmail}
-                        onChange={(e) => setECEmail(e.target.value)}
                         placeholder="JohnDoe88@Email.com"
-                        required
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("emergencyEmail")}
                     />
+                    {errors.emergencyEmail && <p className={errorClass}>{errors.emergencyEmail.message}</p>}
                     </label>
 
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
+                    <label className={labelClass}>
                     Emergency Contact Address
                     <input
                         type="text"
-                        name="ecaddress"
                         autoComplete="ecaddress"
-                        value={ecAddress}
-                        onChange={(e) => setECAddress(e.target.value)}
                         placeholder="123 Easy Str."
-                        required
                         autoFocus
-                        className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+                        className={inputClass}
+                        {...register("emergencyAddress")}
                     />
                     </label>
                 </div>
@@ -414,8 +419,8 @@ const VolAdd = () => {
                 Clear Form
                 </button>
                 <button
-                    type="button"
-                    onClick={onSend}
+                    type="submit"
+                    disabled={isSubmitting}
                     className="m-2 flex-1 mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                 Add Volunteer
