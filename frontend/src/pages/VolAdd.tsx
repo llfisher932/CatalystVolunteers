@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { WithContext as ReactTags, SEPARATORS, type Tag } from "react-tag-input";
@@ -20,8 +20,9 @@ const volunteerFormSchema = volunteerCreateSchema
     path: ["confirmPassword"],
   });
 
-export type VolunteerFormInput = z.input<typeof volunteerFormSchema>;
-export type VolunteerFormOutput = z.output<typeof volunteerFormSchema>;
+type VolunteerFormInput = z.input<typeof volunteerFormSchema>;
+type VolunteerFormOutput = z.output<typeof volunteerFormSchema>;
+const queryClient = useQueryClient();
 
 const VolAdd = () => {
   // Handling the skills tagfield
@@ -60,7 +61,7 @@ const VolAdd = () => {
   const volAddMutation = useMutation<unknown, Error, VolunteerCreateInput>({
     mutationFn: (volunteer) => createVolunteer(volunteer, token),
     onSuccess: () => {
-      reset();
+      queryClient.invalidateQueries({ queryKey: ["volunteers"] });
       navigate("/volunteers");
     },
     onError: (error) => {
