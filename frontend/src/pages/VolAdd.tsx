@@ -22,7 +22,6 @@ const volunteerFormSchema = volunteerCreateSchema
 
 type VolunteerFormInput = z.input<typeof volunteerFormSchema>;
 type VolunteerFormOutput = z.output<typeof volunteerFormSchema>;
-const queryClient = useQueryClient();
 
 const VolAdd = () => {
   // Handling the skills tagfield
@@ -47,6 +46,7 @@ const VolAdd = () => {
 
   const navigate = useNavigate();
   const { token, logout } = useAuth();
+  const queryClient = useQueryClient();
 
   const {
     register,
