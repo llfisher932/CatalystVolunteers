@@ -41,7 +41,7 @@ const VolAdd = () => {
     setSkills((prevTags) => {
       return [...prevTags, tag];
     });
-    console.log("current tags: " + JSON.stringify(skills));
+    //console.log("current tags: " + JSON.stringify(skills));
   };
 
   const navigate = useNavigate();
@@ -166,7 +166,7 @@ const VolAdd = () => {
             </label>
             Volunteering Information
             <label className={labelClass}>
-              Skills and Interests DO THIS!!
+              Skills and Interests
               <ReactTags
                 tags={skills}
                 id="skills"
@@ -361,7 +361,8 @@ const VolAdd = () => {
 
         <div className="flex">
           <button
-            type="reset"
+            type="button"
+            onClick={() => {reset(); setSkills([]);}}
             className="m-2 flex-1 mt-2 rounded-lg bg-red-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60">
             Clear Form
           </button>
