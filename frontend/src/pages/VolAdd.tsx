@@ -1,4 +1,4 @@
-import React from "react";
+import React, { type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -7,9 +7,9 @@ import { volunteerCreateSchema, APPROVAL_STATUSES } from "../schemas/volunteer.s
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../lib/useAuth.ts";
+import { ApiError } from "../lib/api.ts";
 
 const VolAdd = () => {
-
 
     // Handling the skills tagfield 
     const [skills, setSkills] = React.useState<Array<Tag>>([]);
@@ -20,7 +20,6 @@ const VolAdd = () => {
         const updatedTags = [...skills];
         updatedTags.splice(index, 1, newTag);
         setSkills(updatedTags);
-        console.log("onTagUpdate HAS BEEN TRIGGERED")
     };
     const handleAddition = (tag: Tag) => {
         setSkills((prevTags) => {
@@ -31,8 +30,6 @@ const VolAdd = () => {
 
     //zod work (thanks logan!)
     const volunteerFormSchema = volunteerCreateSchema.extend({
-        skills: z.string().optional(),
-        preferredCenters: z.string().optional(),
         confirmPassword: z.string(),
     }).refine((data) => data.password === data.confirmPassword, {
         message: "Passwords don't match",
@@ -44,52 +41,47 @@ const VolAdd = () => {
     const [success, setSuccess] = useState(false);
 
     type VolunteerFormInput = z.input<typeof volunteerFormSchema>;
-    type VolunteerFormOutput = z.output<typeof volunteerFormSchema>;
-
-    const splitList = (value: string | undefined): string[] =>
-        value
-            ? value
-                .split(",")
-                .map((item) => item.trim())
-                .filter(Boolean)
-            : [];
-
-        const blankToUndefined = (data: Record<string, unknown>) =>
-            Object.fromEntries(Object.entries(data).map(([key, value]) => [key, value === "" ? undefined : value]));
+    type VolunteerFormOutput = z.output<typeof volunteerCreateSchema>;
 
     const {
         register,
-        handleSubmit,
         reset,
+        handleSubmit,
         formState: { errors, isSubmitting },
     } = useForm<VolunteerFormInput, any, VolunteerFormOutput>({
         resolver: zodResolver(volunteerFormSchema),
-        defaultValues: {
-        driversLicenseOnFile: false,
-        socialSecurityOnFile: false,
-        approvalStatus: "PENDING",
-        },
         mode: "onBlur",
     });
+
+    const sendVol = async (VolunteerFormInput) => {
+        console.log("im totally sending")
+    }
+
+    const volAddMutation = useMutation({
+        mutationFn: sendVol,
+            
+      });
+    
+    
+      // Show the server's message (e.g. "Invalid username or password"), or a
+      // generic fallback for anything unexpected.
+      const error =
+        volAddMutation.error &&
+        (volAddMutation.error instanceof ApiError
+          ? volAddMutation.error.message
+          : "Something went wrong. Please try again.");
 
     const submitForm = async (data: VolunteerFormInput) => {
         setSubmitError(null);
         setSuccess(false);
 
-        // needs to to be addressed so it's tanstack
-        const payload = {
-        ...blankToUndefined(data),
-        skills: splitList(data.skills),
-        preferredCenters: splitList(data.preferredCenters),
-        };
-
-        const res = await fetch("http://localhost:3000/volunteers", {
+    const res = await fetch("http://localhost:3000/volunteers", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify("payload"),
         });
 
         if (!res.ok) {
@@ -423,7 +415,7 @@ const VolAdd = () => {
                     disabled={isSubmitting}
                     className="m-2 flex-1 mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                Add Volunteer
+                {volAddMutation.isPending ? "Adding Volunteer…" : "Add Volunteer"}
                 </button>
             </div>
 
