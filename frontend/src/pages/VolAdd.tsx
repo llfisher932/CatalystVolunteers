@@ -263,7 +263,7 @@ const VolAdd = () => {
             <label className={labelClass}>
               Cell Phone Number
               <input
-                type="number"
+                type="tel"
                 autoComplete="cellnum"
                 placeholder="8881234567"
                 className={inputClass}
@@ -274,7 +274,7 @@ const VolAdd = () => {
             <label className={labelClass}>
               Home Phone Number
               <input
-                type="number"
+                type="tel"
                 autoComplete="cellnum"
                 placeholder="8881234567"
                 className={inputClass}
@@ -285,7 +285,7 @@ const VolAdd = () => {
             <label className={labelClass}>
               Work Phone Number
               <input
-                type="number"
+                type="tel"
                 autoComplete="worknum"
                 placeholder="8881234567"
                 className={inputClass}
@@ -317,7 +317,7 @@ const VolAdd = () => {
             <label className={labelClass}>
               Emergency Contact Home Phone Number
               <input
-                type="number"
+                type="tel"
                 autoComplete="echomenum"
                 placeholder="8881234567"
                 className={inputClass}
@@ -328,7 +328,7 @@ const VolAdd = () => {
             <label className={labelClass}>
               Emergency Contact Work Phone Number
               <input
-                type="number"
+                type="tel"
                 autoComplete="ecworknum"
                 placeholder="8881234567"
                 className={inputClass}

@@ -55,7 +55,7 @@ export async function createVolunteer(data: VolunteerCreateInput, token: string 
   const body = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new ApiError(res.status, body?.message ?? "Login failed. Please try again.");
+    throw new ApiError(res.status, body?.message ?? "Creation failed. Please try again.");
   }
 
   return body;
