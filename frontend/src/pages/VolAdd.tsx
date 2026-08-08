@@ -362,7 +362,10 @@ const VolAdd = () => {
         <div className="flex">
           <button
             type="button"
-            onClick={() => {reset(); setSkills([]);}}
+            onClick={() => {
+              reset();
+              setSkills([]);
+            }}
             className="m-2 flex-1 mt-2 rounded-lg bg-red-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60">
             Clear Form
           </button>

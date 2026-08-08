@@ -3,8 +3,11 @@ import { z } from "zod";
 export const APPROVAL_STATUSES = ["PENDING", "APPROVED", "DISAPPROVED", "INACTIVE"] as const;
 
 const trimmed = z.string().trim();
-const optionalString = trimmed.nullish(); // string | null | undefined
-const optionalEmail = z.email().trim().toLowerCase().nullish(); // validated email | null | undefined
+const optionalString = trimmed.optional();
+const optionalPhone = z
+  .union([z.literal(""), trimmed.min(7, "Number is too short").max(15, "Number is too long")])
+  .optional();
+const optionalEmail = z.union([z.literal(""), z.email("Improper formatting").trim().toLowerCase()]).optional();
 
 const volunteerBase = z.object({
   firstName: trimmed.min(1, "Cannot be empty"),
@@ -13,17 +16,17 @@ const volunteerBase = z.object({
   password: z.string().min(8, "Must be at least 8 characters"),
   email: z.email("Improper formatting").trim().toLowerCase(),
   address: optionalString,
-  homePhone: z.union([z.literal(""), trimmed.min(7, "Number is too short").max(15, "Number is too long")]),
-  workPhone: z.union([z.literal(""), trimmed.min(7, "Number is too short").max(15, "Number is too long")]),
-  cellPhone: z.union([z.literal(""), trimmed.min(7, "Number is too short").max(15, "Number is too long")]),
+  homePhone: optionalPhone,
+  workPhone: optionalPhone,
+  cellPhone: optionalPhone,
   educationalBackground: optionalString,
   currentLicenses: optionalString,
   skills: z.array(trimmed),
   availability: optionalString,
   emergencyName: optionalString,
-  emergencyHomePhone: z.union([z.literal(""), trimmed.min(7, "Number is too short").max(15, "Number is too long")]),
-  emergencyWorkPhone: z.union([z.literal(""), trimmed.min(7, "Number is too short").max(15, "Number is too long")]),
-  emergencyEmail: z.union([z.literal(""), z.email("improper formatting")]),
+  emergencyHomePhone: optionalPhone,
+  emergencyWorkPhone: optionalPhone,
+  emergencyEmail: optionalEmail,
   emergencyAddress: optionalString,
   driversLicenseOnFile: z.boolean(),
   socialSecurityOnFile: z.boolean(),
