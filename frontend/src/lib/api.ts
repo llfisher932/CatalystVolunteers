@@ -1,5 +1,5 @@
 // Base URL of the backend API. Defaults to the local dev server; override with
-import { type VolunteerCreateInput } from "../schemas/volunteer.schema.ts";
+import { type VolunteerCreateInput, type VolunteerUpdateInput } from "../schemas/volunteer.schema.ts";
 
 // VITE_API_URL in a .env file if the backend runs elsewhere.
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
@@ -60,6 +60,26 @@ export async function createVolunteer(data: VolunteerCreateInput, token: string 
 
   return body;
 }
+
+export async function editVolunteer(data: VolunteerUpdateInput, id: string, token: string | null) {
+  const res = await fetch("http://localhost:3000/volunteers/" + id, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  const body = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new ApiError(res.status, body?.message ?? "Edit failed. Please try again.");
+  }
+
+  return body;
+}
+
 
 export async function getVolunteer(data: string, token: string | null) {
   const res = await fetch(("http://localhost:3000/volunteers/" + data), {

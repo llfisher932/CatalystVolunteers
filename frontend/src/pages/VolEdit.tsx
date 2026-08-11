@@ -1,17 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { WithContext as ReactTags, SEPARATORS, type Tag } from "react-tag-input";
-import { volunteerCreateSchema, type VolunteerCreateInput } from "../schemas/volunteer.schema.ts";
+import { volunteerUpdateSchema, type VolunteerUpdateInput } from "../schemas/volunteer.schema.ts";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../lib/useAuth.ts";
 import { useNavigate } from "react-router-dom";
-import { ApiError, createVolunteer, getVolunteer } from "../lib/api.ts";
+import { ApiError, editVolunteer, getVolunteer } from "../lib/api.ts";
 import { useParams } from 'react-router-dom'
 
 //zod work (thanks logan!)
-const volunteerFormSchema = volunteerCreateSchema
+const volunteerFormSchema = volunteerUpdateSchema
   .omit({ skills: true })
   .extend({
     confirmPassword: z.string(),
@@ -32,9 +32,9 @@ const VolEdit = () => {
 
   //Existance checking
   const {id} = useParams()
-  const { data, isPending, isError, status, error} = useQuery({
+  const { data, isPending, isError, error} = useQuery({
     queryKey: [id],
-    queryFn: (data) => getVolunteer(id!, token),
+    queryFn: () => getVolunteer(id!, token),
   })
 
   // Handling the skills tagfield
@@ -57,9 +57,22 @@ const VolEdit = () => {
     //console.log("current tags: " + JSON.stringify(skills));
   };
 
+  // Default skills
+  useEffect(() => {
+    if (data) {
+      data.skills.forEach( (skill: string) => {
+        skills.push({
+          id: skill,
+          text: skill,
+          className: ""
+        })
+      })
+      console.log("got the guy boss!" + data)
+    }
+  }, []);
+
   const {
     register,
-    reset,
     handleSubmit,
     formState: { errors },
   } = useForm<VolunteerFormInput, unknown, VolunteerFormOutput>({
@@ -67,9 +80,8 @@ const VolEdit = () => {
     mode: "onBlur",
   });
 
-  //EDIT ME!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  const volAddMutation = useMutation<unknown, Error, VolunteerCreateInput>({
-    mutationFn: (volunteer) => createVolunteer(volunteer, token),
+  const volEditMutation = useMutation<unknown, Error, VolunteerUpdateInput>({
+    mutationFn: (volunteer) => editVolunteer(volunteer, id!, token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["volunteers"] });
       navigate("/volunteers");
@@ -83,9 +95,9 @@ const VolEdit = () => {
   });
 
   const error2 =
-    volAddMutation.error &&
-    (volAddMutation.error instanceof ApiError
-      ? volAddMutation.error.message
+    volEditMutation.error &&
+    (volEditMutation.error instanceof ApiError
+      ? volEditMutation.error.message
       : "Something went wrong. Please try again.");
 
   //css class stuff
@@ -97,8 +109,8 @@ const VolEdit = () => {
   // existance check wrap up
   if (isPending) return <p>Loading...</p>;
   if (isError) {
-    //navigate("/volunteers");
-    return <p>uh oh! {error.message}</p>
+    navigate("/volunteers");
+    //return <p>uh oh! {error.message}</p>
   }
 
   return (
@@ -106,7 +118,7 @@ const VolEdit = () => {
       <form
         noValidate
         onSubmit={handleSubmit(({ confirmPassword, ...volunteer }) => {
-          volAddMutation.mutate({ ...volunteer, skills: skills.map((skill) => skill.text) });
+          volEditMutation.mutate({ ...volunteer, skills: skills.map((skill) => skill.text) });
         })}
         className="w-full max-w-smx2 flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
         {error2 && (
@@ -122,13 +134,12 @@ const VolEdit = () => {
             Essentials
             <label className={labelClass}>
               <p>
-                First Name <span className="text-red-500">*</span>
+                First Name
               </p>
               <input
                 type="text"
                 autoComplete="firstName"
-                placeholder="Jane"
-                required
+                placeholder={data.firstName}
                 className={inputClass}
                 {...register("firstName")}
               />
@@ -136,13 +147,12 @@ const VolEdit = () => {
             </label>
             <label className={labelClass}>
               <p>
-                Last Name <span className="text-red-500">*</span>
+                Last Name
               </p>
               <input
                 type="text"
                 autoComplete="lastName"
-                placeholder="Doe"
-                required
+                placeholder={data.lastName}
                 className={inputClass}
                 {...register("lastName")}
               />
@@ -150,13 +160,12 @@ const VolEdit = () => {
             </label>
             <label className={labelClass}>
               <p>
-                Username <span className="text-red-500">*</span>
+                Username
               </p>
               <input
                 type="text"
                 autoComplete="username"
-                placeholder="Volunteer77"
-                required
+                placeholder={data.username}
                 className={inputClass}
                 {...register("username")}
               />
@@ -164,19 +173,18 @@ const VolEdit = () => {
             </label>
             <label className={labelClass}>
               <p>
-                Password<span className="text-red-500">*</span>
+                Password
               </p>
-              <input type="password" placeholder="••••••••" required className={inputClass} {...register("password")} />
+              <input type="password" placeholder="••••••••" className={inputClass} {...register("password")} />
               {errors.password && <p className={errorClass}>{errors.password.message}</p>}
             </label>
             <label className={labelClass}>
               <p>
-                Confirm Password<span className="text-red-500">*</span>
+                Confirm Password
               </p>
               <input
                 type="password"
                 placeholder="••••••••"
-                required
                 className={inputClass}
                 {...register("confirmPassword")}
               />
@@ -207,7 +215,7 @@ const VolEdit = () => {
               Highest Level of Education
               <input
                 type="text"
-                placeholder="B.S. Nursing, UNF"
+                placeholder={data.educationalBackground}
                 className={inputClass}
                 {...register("educationalBackground")}
               />
@@ -217,7 +225,7 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="licenses"
-                placeholder="RN (FL), CPR certified"
+                placeholder={data.currentLicenses}
                 className={inputClass}
                 {...register("currentLicenses")}
               />
@@ -228,6 +236,7 @@ const VolEdit = () => {
                 type="checkbox"
                 id="driversLicenseOnFile"
                 className={inputClass}
+                checked={data.driversLicenseOnFile}
                 {...register("driversLicenseOnFile")}
               />
             </label>
@@ -235,14 +244,20 @@ const VolEdit = () => {
               Is there a social security number on record for this volunteer?
               <input
                 type="checkbox"
-                id="socialSecurityOnFIle"
+                id="socialSecurityOnFile"
                 className={inputClass}
+                checked={data.socialSecurityOnFile}
                 {...register("socialSecurityOnFile")}
               />
             </label>
             <label className={labelClass}>
               Approval Status
-              <select id="approvalStatus" className="bg-gray-100" {...register("approvalStatus")}>
+              <select 
+                id="approvalStatus" 
+                className="bg-gray-100"
+                defaultValue={data.approvalStatus}
+                {...register("approvalStatus")}
+              >
                 <option value="PENDING">Pending</option>
                 <option value="APPROVED">Approved</option>
                 <option value="DISAPPROVED">Disapproved</option>
@@ -254,7 +269,7 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="availability"
-                placeholder="Weekday evenings, Saturday mornings"
+                placeholder={data.availability}
                 className={inputClass}
                 {...register("availability")}
               />
@@ -265,13 +280,12 @@ const VolEdit = () => {
             Contact Information
             <label className={labelClass}>
               <p>
-                Email <span className="text-red-500">*</span>
+                Email
               </p>
               <input
                 type="text"
                 autoComplete="email"
-                placeholder="JaneDoe16@Email.com"
-                required
+                placeholder={data.email}
                 className={inputClass}
                 {...register("email")}
               />
@@ -282,7 +296,7 @@ const VolEdit = () => {
               <input
                 type="tel"
                 autoComplete="cellnum"
-                placeholder="8881234567"
+                placeholder={data.cellPhone}
                 className={inputClass}
                 {...register("cellPhone")}
               />
@@ -293,7 +307,7 @@ const VolEdit = () => {
               <input
                 type="tel"
                 autoComplete="cellnum"
-                placeholder="8881234567"
+                placeholder={data.homePhone}
                 className={inputClass}
                 {...register("homePhone")}
               />
@@ -304,7 +318,7 @@ const VolEdit = () => {
               <input
                 type="tel"
                 autoComplete="worknum"
-                placeholder="8881234567"
+                placeholder={data.workPhone}
                 className={inputClass}
                 {...register("workPhone")}
               />
@@ -315,7 +329,7 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="address"
-                placeholder="123 Easy Str."
+                placeholder={data.address}
                 className={inputClass}
                 {...register("address")}
               />
@@ -326,7 +340,7 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="ecName"
-                placeholder="John Doe"
+                placeholder={data.emergencyName}
                 className={inputClass}
                 {...register("emergencyName")}
               />
@@ -336,7 +350,7 @@ const VolEdit = () => {
               <input
                 type="tel"
                 autoComplete="echomenum"
-                placeholder="8881234567"
+                placeholder={data.emergencyHomePhone}
                 className={inputClass}
                 {...register("emergencyHomePhone")}
               />
@@ -347,7 +361,7 @@ const VolEdit = () => {
               <input
                 type="tel"
                 autoComplete="ecworknum"
-                placeholder="8881234567"
+                placeholder={data.emergencyWorkPhone}
                 className={inputClass}
                 {...register("emergencyWorkPhone")}
               />
@@ -358,7 +372,7 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="ecemail"
-                placeholder="JohnDoe88@Email.com"
+                placeholder={data.emergencyEmail}
                 className={inputClass}
                 {...register("emergencyEmail")}
               />
@@ -369,7 +383,7 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="ecaddress"
-                placeholder="123 Easy Str."
+                placeholder={data.emergencyAddress}
                 className={inputClass}
                 {...register("emergencyAddress")}
               />
@@ -380,18 +394,15 @@ const VolEdit = () => {
         <div className="flex">
           <button
             type="button"
-            onClick={() => {
-              reset();
-              setSkills([]);
-            }}
+            onClick={() => {navigate("/volunteers");}}
             className="m-2 flex-1 mt-2 rounded-lg bg-red-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60">
-            Clear Form
+            Cancel Edit & Return
           </button>
           <button
             type="submit"
-            disabled={volAddMutation.isPending}
+            disabled={volEditMutation.isPending}
             className="m-2 flex-1 mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60">
-            {volAddMutation.isPending ? "Adding Volunteer…" : "Add Volunteer"}
+            {volEditMutation.isPending ? "Editing Volunteer…" : "Edit Volunteer"}
           </button>
         </div>
       </form>

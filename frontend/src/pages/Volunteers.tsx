@@ -100,7 +100,7 @@ const Volunteers = () => {
                     {data?.data.map((volunteer) => {
                       return (
                         <tr key={volunteer.id}>
-                          <VolunteerResult fName={volunteer.firstName} lName={volunteer.lastName} email={volunteer.email} approvalStatus={volunteer.approvalStatus}/>
+                          <VolunteerResult fName={volunteer.firstName} lName={volunteer.lastName} email={volunteer.email} approvalStatus={volunteer.approvalStatus} id={volunteer.id}/>
                         </tr>
                         
                       );
