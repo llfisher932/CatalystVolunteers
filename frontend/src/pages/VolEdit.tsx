@@ -33,7 +33,7 @@ const VolEdit = () => {
 
   //Existance checking
   const {id} = useParams()
-  const { data, isPending, isError, error} = useQuery({
+  const { data, isPending, isError} = useQuery({
     queryKey: [id],
     queryFn: () => getVolunteer(id!, token),
   })
