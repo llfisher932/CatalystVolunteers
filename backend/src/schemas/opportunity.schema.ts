@@ -8,14 +8,11 @@ const optionalString = trimmed.nullish();
 const opportunityBase = z.object({
   title: trimmed.min(1, "cannot be empty"),
   description: optionalString,
-  skills: z.array(trimmed),
   center: trimmed.min(1, "cannot be empty"),
 });
 
-//applies defaults for opportunity creation
-export const opportunityCreateSchema = opportunityBase.extend({
-  skills: z.array(trimmed).default([]),
-});
+//schema for creation of an opportunity
+export const opportunityCreateSchema = opportunityBase;
 
 // Update: Base schema but everything is optional
 export const opportunityUpdateSchema = opportunityBase.partial();
@@ -23,7 +20,6 @@ export const opportunityUpdateSchema = opportunityBase.partial();
 export const OPPORTUNITY_FILTERS = ["RECENT", "ALL"] as const;
 
 export const opportunityQuerySchema = z.object({
-  // Search across title, description, and skills
   q: trimmed.min(1).optional(),
   filter: z.enum(OPPORTUNITY_FILTERS).default("RECENT"),
   center: trimmed.min(1).optional(),

@@ -377,11 +377,6 @@
  *           type: string
  *           nullable: true
  *           example: "Sorting and packing donations, 9am-1pm"
- *         skills:
- *           type: array
- *           items:
- *             type: string
- *           example: ["food service", "heavy lifting"]
  *         center:
  *           type: string
  *           description: Free-text center name
@@ -420,12 +415,6 @@
  *         description:
  *           type: string
  *           example: "Sorting and packing donations, 9am-1pm"
- *         skills:
- *           type: array
- *           items:
- *             type: string
- *           default: []
- *           example: ["food service", "heavy lifting"]
  *         center:
  *           type: string
  *           example: "Downtown"
@@ -444,11 +433,6 @@
  *           type: string
  *           nullable: true
  *           example: "Sorting and packing donations, 1pm-5pm"
- *         skills:
- *           type: array
- *           items:
- *             type: string
- *           example: ["food service"]
  *         center:
  *           type: string
  *           example: "Northside"
