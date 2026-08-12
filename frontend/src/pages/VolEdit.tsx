@@ -26,6 +26,9 @@ type VolunteerFormOutput = z.output<typeof volunteerFormSchema>;
 
 const VolEdit = () => {
 
+  const [licenseRecord, setLicenseRecord] = useState(false);
+  const [socialRecord, setSocialRecord] = useState(false);
+
   const navigate = useNavigate();
   const { token, logout } = useAuth();
   const queryClient = useQueryClient();
@@ -58,9 +61,9 @@ const VolEdit = () => {
   };
 
   // Default skills
-  var defaulted = 0;
+  var defaulted = false;
   const setDefaultSkills = (data: string[] ) => {
-    if (defaulted == 0){
+    if (!defaulted){
       data.forEach( (skill: string) => {
         skills.push({
           id: skill,
@@ -68,7 +71,7 @@ const VolEdit = () => {
           className: ""
         })
       })
-      defaulted++;
+      defaulted = true;
     }
     
   }
@@ -76,6 +79,10 @@ const VolEdit = () => {
   useEffect(() => {
     if (data){
       setDefaultSkills(data.skills)
+      if (data.driversLicenseOnFile)
+        setLicenseRecord(true)
+      if (data.socialSecurityOnFile)
+        setSocialRecord(true)
     }
   }, [data])
 
@@ -126,7 +133,7 @@ const VolEdit = () => {
       <form
         noValidate
         onSubmit={handleSubmit(({ confirmPassword, ...volunteer }) => {
-          volEditMutation.mutate({ ...volunteer, skills: skills.map((skill) => skill.text) });
+          volEditMutation.mutate({ ...volunteer, skills: skills.map((skill) => skill.text), driversLicenseOnFile:licenseRecord, socialSecurityOnFile:socialRecord });
         })}
         className="w-full max-w-smx2 flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
         {error2 && (
@@ -244,22 +251,18 @@ const VolEdit = () => {
                 type="checkbox"
                 id="driversLicenseOnFile"
                 className={inputClass}
-                checked={data.driversLicenseOnFile}
-                {...register("driversLicenseOnFile")}
+                checked={licenseRecord}
+                onChange={(e) => setLicenseRecord(e.target.checked)}
               />
             </label>
-            {/* I can't seem to get these to default correctly */}
-            {/* This is the closest I've gotten, it correctly shows what it was saved as */}
-            {/* however it cannot be toggled. */}
-            {/* What gives? */}
             <label className={labelClass}>
               Is there a social security number on record for this volunteer?
               <input
                 type="checkbox"
                 id="socialSecurityOnFile"
                 className={inputClass}
-                checked={data.socialSecurityOnFile}
-                {...register("socialSecurityOnFile")}
+                checked={socialRecord}
+                onChange={(e) => setSocialRecord(e.target.checked)}
               />
             </label>
             <label className={labelClass}>
