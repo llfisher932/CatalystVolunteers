@@ -14,7 +14,8 @@ import { useParams } from 'react-router-dom'
 const volunteerFormSchema = volunteerUpdateSchema
   .omit({ skills: true })
   .extend({
-    confirmPassword: z.string(),
+    confirmPassword: z.string().optional(),
+    password: z.union([z.literal(""), z.string().min(8, "Must be at least 8 characters.")]).optional()
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -56,20 +57,6 @@ const VolEdit = () => {
     });
     //console.log("current tags: " + JSON.stringify(skills));
   };
-
-  // Default skills
-  var defaulted = false;
-  const setDefaultSkills = (data: string[] ) => {
-    let results: { id: string; text: string; className: string; }[] = []
-    data.forEach( (skill: string) => {
-      results.push({
-        id: skill,
-        text: skill,
-        className: ""
-      })
-    })
-    return results
-  }
 
   const {
     register,
