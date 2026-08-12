@@ -26,9 +26,6 @@ type VolunteerFormOutput = z.output<typeof volunteerFormSchema>;
 
 const VolEdit = () => {
 
-  const [licenseRecord, setLicenseRecord] = useState(false);
-  const [socialRecord, setSocialRecord] = useState(false);
-
   const navigate = useNavigate();
   const { token, logout } = useAuth();
   const queryClient = useQueryClient();
@@ -63,37 +60,34 @@ const VolEdit = () => {
   // Default skills
   var defaulted = false;
   const setDefaultSkills = (data: string[] ) => {
-    if (!defaulted){
-      data.forEach( (skill: string) => {
-        skills.push({
-          id: skill,
-          text: skill,
-          className: ""
-        })
+    let results: { id: string; text: string; className: string; }[] = []
+    data.forEach( (skill: string) => {
+      results.push({
+        id: skill,
+        text: skill,
+        className: ""
       })
-      defaulted = true;
-    }
-    
+    })
+    return results
   }
-
-  useEffect(() => {
-    if (data){
-      setDefaultSkills(data.skills)
-      if (data.driversLicenseOnFile)
-        setLicenseRecord(true)
-      if (data.socialSecurityOnFile)
-        setSocialRecord(true)
-    }
-  }, [data])
 
   const {
     register,
+    reset,
     handleSubmit,
     formState: { errors },
   } = useForm<VolunteerFormInput, unknown, VolunteerFormOutput>({
     resolver: zodResolver(volunteerFormSchema),
     mode: "onBlur",
   });
+
+  useEffect(() => {
+    if (data) {
+      setSkills(data.skills.map((skill: Tag) => ({ id: skill, text: skill, className: ""})))
+      reset(data)
+    }
+
+  }, [data])
 
   const volEditMutation = useMutation<unknown, Error, VolunteerUpdateInput>({
     mutationFn: (volunteer) => editVolunteer(volunteer, id!, token),
@@ -132,8 +126,8 @@ const VolEdit = () => {
     <div className="w-full flex justify-center items-center py-16 px-4">
       <form
         noValidate
-        onSubmit={handleSubmit(({ confirmPassword, ...volunteer }) => {
-          volEditMutation.mutate({ ...volunteer, skills: skills.map((skill) => skill.text), driversLicenseOnFile:licenseRecord, socialSecurityOnFile:socialRecord });
+        onSubmit={handleSubmit(({ confirmPassword, password, ...volunteer }) => {
+          volEditMutation.mutate({ ...volunteer, ...(password ? {password} : {}), skills: skills.map((skill) => skill.text)});
         })}
         className="w-full max-w-smx2 flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
         {error2 && (
@@ -154,7 +148,6 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="firstName"
-                placeholder={data.firstName}
                 className={inputClass}
                 {...register("firstName")}
               />
@@ -167,7 +160,6 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="lastName"
-                placeholder={data.lastName}
                 className={inputClass}
                 {...register("lastName")}
               />
@@ -180,7 +172,6 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="username"
-                placeholder={data.username}
                 className={inputClass}
                 {...register("username")}
               />
@@ -217,6 +208,7 @@ const VolEdit = () => {
                 onTagUpdate={onTagUpdate}
                 inputFieldPosition="top"
                 placeholder="Press enter to submit"
+                autofocus={false}
                 maxTags={8}
                 classNames={{
                   tag: "rounded-lg bg-emerald-400 border-green-600 px-2 py-0 mx-1 ",
@@ -230,7 +222,6 @@ const VolEdit = () => {
               Highest Level of Education
               <input
                 type="text"
-                placeholder={data.educationalBackground}
                 className={inputClass}
                 {...register("educationalBackground")}
               />
@@ -240,7 +231,6 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="licenses"
-                placeholder={data.currentLicenses}
                 className={inputClass}
                 {...register("currentLicenses")}
               />
@@ -251,8 +241,7 @@ const VolEdit = () => {
                 type="checkbox"
                 id="driversLicenseOnFile"
                 className={inputClass}
-                checked={licenseRecord}
-                onChange={(e) => setLicenseRecord(e.target.checked)}
+                {...register("driversLicenseOnFile")}
               />
             </label>
             <label className={labelClass}>
@@ -261,8 +250,7 @@ const VolEdit = () => {
                 type="checkbox"
                 id="socialSecurityOnFile"
                 className={inputClass}
-                checked={socialRecord}
-                onChange={(e) => setSocialRecord(e.target.checked)}
+                {...register("socialSecurityOnFile")}
               />
             </label>
             <label className={labelClass}>
@@ -284,7 +272,6 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="availability"
-                placeholder={data.availability}
                 className={inputClass}
                 {...register("availability")}
               />
@@ -300,7 +287,6 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="email"
-                placeholder={data.email}
                 className={inputClass}
                 {...register("email")}
               />
@@ -311,7 +297,6 @@ const VolEdit = () => {
               <input
                 type="tel"
                 autoComplete="cellnum"
-                placeholder={data.cellPhone}
                 className={inputClass}
                 {...register("cellPhone")}
               />
@@ -322,7 +307,6 @@ const VolEdit = () => {
               <input
                 type="tel"
                 autoComplete="cellnum"
-                placeholder={data.homePhone}
                 className={inputClass}
                 {...register("homePhone")}
               />
@@ -333,7 +317,6 @@ const VolEdit = () => {
               <input
                 type="tel"
                 autoComplete="worknum"
-                placeholder={data.workPhone}
                 className={inputClass}
                 {...register("workPhone")}
               />
@@ -344,7 +327,6 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="address"
-                placeholder={data.address}
                 className={inputClass}
                 {...register("address")}
               />
@@ -355,7 +337,6 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="ecName"
-                placeholder={data.emergencyName}
                 className={inputClass}
                 {...register("emergencyName")}
               />
@@ -365,7 +346,6 @@ const VolEdit = () => {
               <input
                 type="tel"
                 autoComplete="echomenum"
-                placeholder={data.emergencyHomePhone}
                 className={inputClass}
                 {...register("emergencyHomePhone")}
               />
@@ -376,7 +356,6 @@ const VolEdit = () => {
               <input
                 type="tel"
                 autoComplete="ecworknum"
-                placeholder={data.emergencyWorkPhone}
                 className={inputClass}
                 {...register("emergencyWorkPhone")}
               />
@@ -387,7 +366,6 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="ecemail"
-                placeholder={data.emergencyEmail}
                 className={inputClass}
                 {...register("emergencyEmail")}
               />
@@ -398,7 +376,6 @@ const VolEdit = () => {
               <input
                 type="text"
                 autoComplete="ecaddress"
-                placeholder={data.emergencyAddress}
                 className={inputClass}
                 {...register("emergencyAddress")}
               />
