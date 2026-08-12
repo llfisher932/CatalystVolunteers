@@ -58,18 +58,26 @@ const VolEdit = () => {
   };
 
   // Default skills
-  useEffect(() => {
-    if (data) {
-      data.skills.forEach( (skill: string) => {
+  var defaulted = 0;
+  const setDefaultSkills = (data: string[] ) => {
+    if (defaulted == 0){
+      data.forEach( (skill: string) => {
         skills.push({
           id: skill,
           text: skill,
           className: ""
         })
       })
-      console.log("got the guy boss!" + data)
+      defaulted++;
     }
-  }, []);
+    
+  }
+
+  useEffect(() => {
+    if (data){
+      setDefaultSkills(data.skills)
+    }
+  }, [data])
 
   const {
     register,
@@ -240,6 +248,10 @@ const VolEdit = () => {
                 {...register("driversLicenseOnFile")}
               />
             </label>
+            {/* I can't seem to get these to default correctly */}
+            {/* This is the closest I've gotten, it correctly shows what it was saved as */}
+            {/* however it cannot be toggled. */}
+            {/* What gives? */}
             <label className={labelClass}>
               Is there a social security number on record for this volunteer?
               <input
