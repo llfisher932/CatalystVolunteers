@@ -36,6 +36,7 @@ const VolEdit = () => {
   const { data, isPending, isError} = useQuery({
     queryKey: [id],
     queryFn: () => getVolunteer(id!, token),
+    retry: false
   })
 
   // Handling the skills tagfield
@@ -102,12 +103,14 @@ const VolEdit = () => {
     "rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200";
   const errorClass = "text-sm text-red-800";
 
-  // existance check wrap up
+  useEffect(() => {
+    if (isError) {
+      navigate("/volunteers");
+    }
+  }, [isError, navigate]);
+
   if (isPending) return <p>Loading...</p>;
-  if (isError) {
-    navigate("/volunteers");
-    //return <p>uh oh! {error.message}</p>
-  }
+  if (isError) return null;
 
   return (
     <div className="w-full flex justify-center items-center py-16 px-4">
@@ -134,7 +137,6 @@ const VolEdit = () => {
               </p>
               <input
                 type="text"
-                autoComplete="firstName"
                 className={inputClass}
                 {...register("firstName")}
               />
@@ -146,7 +148,6 @@ const VolEdit = () => {
               </p>
               <input
                 type="text"
-                autoComplete="lastName"
                 className={inputClass}
                 {...register("lastName")}
               />
@@ -158,7 +159,6 @@ const VolEdit = () => {
               </p>
               <input
                 type="text"
-                autoComplete="username"
                 className={inputClass}
                 {...register("username")}
               />
@@ -217,7 +217,6 @@ const VolEdit = () => {
               Current Licenses
               <input
                 type="text"
-                autoComplete="licenses"
                 className={inputClass}
                 {...register("currentLicenses")}
               />
@@ -245,7 +244,6 @@ const VolEdit = () => {
               <select 
                 id="approvalStatus" 
                 className="bg-gray-100"
-                defaultValue={data.approvalStatus}
                 {...register("approvalStatus")}
               >
                 <option value="PENDING">Pending</option>
@@ -258,7 +256,6 @@ const VolEdit = () => {
               Availability
               <input
                 type="text"
-                autoComplete="availability"
                 className={inputClass}
                 {...register("availability")}
               />
@@ -273,7 +270,6 @@ const VolEdit = () => {
               </p>
               <input
                 type="text"
-                autoComplete="email"
                 className={inputClass}
                 {...register("email")}
               />
@@ -283,7 +279,6 @@ const VolEdit = () => {
               Cell Phone Number
               <input
                 type="tel"
-                autoComplete="cellnum"
                 className={inputClass}
                 {...register("cellPhone")}
               />
@@ -293,7 +288,6 @@ const VolEdit = () => {
               Home Phone Number
               <input
                 type="tel"
-                autoComplete="cellnum"
                 className={inputClass}
                 {...register("homePhone")}
               />
@@ -303,7 +297,6 @@ const VolEdit = () => {
               Work Phone Number
               <input
                 type="tel"
-                autoComplete="worknum"
                 className={inputClass}
                 {...register("workPhone")}
               />
@@ -313,7 +306,6 @@ const VolEdit = () => {
               Address
               <input
                 type="text"
-                autoComplete="address"
                 className={inputClass}
                 {...register("address")}
               />
@@ -323,7 +315,6 @@ const VolEdit = () => {
               Emergency Contact Name
               <input
                 type="text"
-                autoComplete="ecName"
                 className={inputClass}
                 {...register("emergencyName")}
               />
@@ -332,7 +323,6 @@ const VolEdit = () => {
               Emergency Contact Home Phone Number
               <input
                 type="tel"
-                autoComplete="echomenum"
                 className={inputClass}
                 {...register("emergencyHomePhone")}
               />
@@ -342,7 +332,6 @@ const VolEdit = () => {
               Emergency Contact Work Phone Number
               <input
                 type="tel"
-                autoComplete="ecworknum"
                 className={inputClass}
                 {...register("emergencyWorkPhone")}
               />
@@ -352,7 +341,6 @@ const VolEdit = () => {
               Emergency Contact Email
               <input
                 type="text"
-                autoComplete="ecemail"
                 className={inputClass}
                 {...register("emergencyEmail")}
               />
@@ -362,7 +350,6 @@ const VolEdit = () => {
               Emergency Contact Address
               <input
                 type="text"
-                autoComplete="ecaddress"
                 className={inputClass}
                 {...register("emergencyAddress")}
               />
