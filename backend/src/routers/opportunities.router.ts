@@ -3,15 +3,63 @@ import prisma from "../db.js";
 import { RequiresAuth } from "../auth/auth.js";
 import { BadRequest, validateBody, validateQuery } from "../middleware/index.js";
 import {
+  assignVolunteersSchema,
   opportunityCreateSchema,
   opportunityQuerySchema,
   opportunityUpdateSchema,
+  type AssignVolunteersInput,
   type OpportunityQuery,
 } from "../schemas/opportunity.schema.js";
 
 const router = express.Router();
 
 const RECENT_WINDOW_DAYS = 60;
+
+/**
+ * @openapi
+ * /opportunities/centers:
+ *   get:
+ *     summary: List the distinct centers currently in use
+ *     description: >
+ *       Returns every center name that has at least one opportunity, sorted
+ *       alphabetically. Intended to populate the center filter and to offer
+ *       existing names when creating an opportunity.
+ *     tags: [Opportunities]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: The centers in use
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *               example: ["Downtown", "Northside"]
+ *       401:
+ *         description: Missing or invalid bearer token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UnauthorizedError'
+ *       500:
+ *         description: Unexpected server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
+ */
+// Declared before /:id so "centers" isn't parsed as an id
+router.get("/centers", RequiresAuth, async (_req, res) => {
+  const rows = await prisma.opportunity.findMany({
+    distinct: ["center"],
+    select: { center: true },
+    orderBy: { center: "asc" },
+  });
+
+  return res.json(rows.map((row) => row.center));
+});
 
 /**
  * @openapi
@@ -178,7 +226,16 @@ router.get("/:id", RequiresAuth, async (req, res) => {
     throw BadRequest("A valid opportunity id is required");
   }
 
-  const opportunity = await prisma.opportunity.findUniqueOrThrow({ where: { id } });
+  const opportunity = await prisma.opportunity.findUniqueOrThrow({
+    where: { id },
+    include: {
+      matches: {
+        include: {
+          volunteer: { select: { id: true, firstName: true, lastName: true, email: true } },
+        },
+      },
+    },
+  });
 
   return res.json(opportunity);
 });
@@ -362,6 +419,101 @@ router.delete("/:id", RequiresAuth, async (req, res) => {
   await prisma.opportunity.delete({ where: { id } });
 
   return res.status(204).send();
+});
+
+/**
+ * @openapi
+ * /opportunities/{id}/volunteers:
+ *   put:
+ *     summary: Set the volunteers assigned to an opportunity
+ *     description: >
+ *       Replaces the opportunity's assignment list with the volunteers given.
+ *       Sending an empty array clears all assignments.
+ *     tags: [Opportunities]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: The opportunity's numeric id
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AssignVolunteersRequest'
+ *     responses:
+ *       200:
+ *         description: The opportunity with its updated assignment list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Opportunity'
+ *       400:
+ *         description: Invalid id, or a volunteer email that doesn't match an existing volunteer
+ *       401:
+ *         description: Missing or invalid bearer token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UnauthorizedError'
+ *       404:
+ *         description: No opportunity exists with that id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundError'
+ *       500:
+ *         description: Unexpected server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
+ */
+router.put("/:id/volunteers", RequiresAuth, validateBody(assignVolunteersSchema), async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) {
+    throw BadRequest("A valid opportunity id is required");
+  }
+
+  const volunteerEmails = [...new Set((req.body as AssignVolunteersInput).volunteerEmails)];
+
+  const volunteers = await prisma.volunteer.findMany({
+    where: { email: { in: volunteerEmails } },
+    select: { id: true, email: true },
+  });
+
+  if (volunteers.length !== volunteerEmails.length) {
+    const found = new Set(volunteers.map((v) => v.email));
+    const missing = volunteerEmails.filter((email: string) => !found.has(email));
+    throw BadRequest(`No volunteer found for: ${missing.join(", ")}`);
+  }
+
+  // this really should be a diff approach, but for this project this approach is fine.
+  // we are deleting all vols and adding all the sent ones in ( so maybe lots of wasted operations )
+  const updated = await prisma.opportunity.update({
+    where: { id },
+    data: {
+      matches: {
+        deleteMany: {},
+        create: volunteers.map((volunteer) => ({ volunteerId: volunteer.id })),
+      },
+    },
+    include: {
+      matches: {
+        include: {
+          volunteer: { select: { id: true, firstName: true, lastName: true, email: true } },
+        },
+      },
+    },
+  });
+
+  return res.json(updated);
 });
 
 export default router;

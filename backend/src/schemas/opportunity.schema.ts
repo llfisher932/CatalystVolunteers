@@ -27,6 +27,11 @@ export const opportunityQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(25),
 });
 
+export const assignVolunteersSchema = z.object({
+  volunteerEmails: z.array(z.email("must be a valid email address").trim().toLowerCase()),
+});
+
+export type AssignVolunteersInput = z.infer<typeof assignVolunteersSchema>;
 export type OpportunityCreateInput = z.infer<typeof opportunityCreateSchema>;
 export type OpportunityUpdateInput = z.infer<typeof opportunityUpdateSchema>;
 export type OpportunityQuery = z.infer<typeof opportunityQuerySchema>;

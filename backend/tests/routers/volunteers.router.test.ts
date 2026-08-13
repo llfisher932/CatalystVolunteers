@@ -1,4 +1,3 @@
-// tests/routers/volunteers.router.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import express from "express";
 import request from "supertest";
@@ -50,6 +49,7 @@ const validBody = {
 };
 
 const findManyArgs = () => (prisma.volunteer.findMany as any).mock.calls[0][0];
+const findUniqueArgs = () => (prisma.volunteer.findUniqueOrThrow as any).mock.calls[0][0];
 const createArgs = () => (prisma.volunteer.create as any).mock.calls[0][0];
 const updateArgs = () => (prisma.volunteer.update as any).mock.calls[0][0];
 
@@ -233,7 +233,12 @@ describe("GET /volunteers/:id", () => {
     let res: Response;
 
     beforeEach(async () => {
-      (prisma.volunteer.findUniqueOrThrow as any).mockResolvedValue({ id: 1, firstName: "Jane" });
+      (prisma.volunteer.findUniqueOrThrow as any).mockResolvedValue({
+        id: 1,
+        firstName: "Jane",
+        matches: [],
+      });
+
       res = await request(app).get("/volunteers/1");
     });
 
@@ -245,6 +250,17 @@ describe("GET /volunteers/:id", () => {
     });
     it("never returns the password", () => {
       expect(res.body.password).toBeUndefined();
+    });
+    it("omits the password from the query", () => {
+      expect(findUniqueArgs().omit).toEqual({ password: true });
+    });
+    it("includes the matched opportunities", () => {
+      expect(findUniqueArgs().include.matches.include.opportunity.select).toEqual({
+        id: true,
+        title: true,
+        center: true,
+        createdAt: true,
+      });
     });
   });
 
@@ -400,7 +416,7 @@ describe("POST /volunteers", () => {
 
       res = await request(app)
         .post("/volunteers")
-        .send({ ...validBody, skills: [" cooking ", "driving"] });
+        .send({ ...validBody, skills: [" cooking ", "driving"], preferredCenters: [" Downtown "] });
     });
 
     it("returns 201", () => {
@@ -424,12 +440,27 @@ describe("POST /volunteers", () => {
     it("trims the skills", () => {
       expect(createArgs().data.skills).toEqual(["cooking", "driving"]);
     });
+    it("trims the preferred centers", () => {
+      expect(createArgs().data.preferredCenters).toEqual(["Downtown"]);
+    });
     it("defaults the document flags to false", () => {
       expect(createArgs().data.driversLicenseOnFile).toBe(false);
       expect(createArgs().data.socialSecurityOnFile).toBe(false);
     });
     it("defaults the approval status to pending", () => {
       expect(createArgs().data.approvalStatus).toBe("PENDING");
+    });
+  });
+
+  describe("preferred centers are omitted", () => {
+    beforeEach(async () => {
+      (prisma.volunteer.create as any).mockResolvedValue({ id: 1 });
+
+      await request(app).post("/volunteers").send(validBody);
+    });
+
+    it("defaults them to an empty list", () => {
+      expect(createArgs().data.preferredCenters).toEqual([]);
     });
   });
 
@@ -564,6 +595,20 @@ describe("PATCH /volunteers/:id", () => {
     });
     it("targets the right volunteer", () => {
       expect(updateArgs().where).toEqual({ id: 1 });
+    });
+  });
+
+  describe("preferred centers are updated", () => {
+    beforeEach(async () => {
+      (prisma.volunteer.update as any).mockResolvedValue({ id: 1 });
+
+      await request(app)
+        .patch("/volunteers/1")
+        .send({ preferredCenters: [" Northside "] });
+    });
+
+    it("trims and stores them", () => {
+      expect(updateArgs().data.preferredCenters).toEqual(["Northside"]);
     });
   });
 
