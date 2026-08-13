@@ -125,6 +125,66 @@ router.get("/", RequiresAuth, validateQuery(opportunityQuerySchema), async (_req
 
 /**
  * @openapi
+ * /opportunities/{id}:
+ *   get:
+ *     summary: Get a single opportunity
+ *     tags: [Opportunities]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: The opportunity's numeric id
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: The opportunity
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Opportunity'
+ *       400:
+ *         description: The id is not a positive integer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BadRequestError'
+ *       401:
+ *         description: Missing or invalid bearer token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UnauthorizedError'
+ *       404:
+ *         description: No opportunity exists with that id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundError'
+ *       500:
+ *         description: Unexpected server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
+ */
+router.get("/:id", RequiresAuth, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) {
+    throw BadRequest("A valid opportunity id is required");
+  }
+
+  const opportunity = await prisma.opportunity.findUniqueOrThrow({ where: { id } });
+
+  return res.json(opportunity);
+});
+
+/**
+ * @openapi
  * /opportunities:
  *   post:
  *     summary: Create a new opportunity
