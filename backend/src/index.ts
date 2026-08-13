@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.js";
-import { userRouter, volunteersRouter } from "./routers/index.js";
+import { opportunitiesRouter, userRouter, volunteersRouter } from "./routers/index.js";
 import { errorHandler, notFoundHandler } from "./middleware/index.js";
 
 const app = express();
@@ -23,6 +23,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/users", userRouter);
 app.use("/volunteers", volunteersRouter);
+app.use("/opportunities", opportunitiesRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

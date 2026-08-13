@@ -8,7 +8,19 @@ vi.mock("../src/db.js", () => ({
   default: {
     user: {
       create: vi.fn(),
-      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+    },
+    volunteer: {
+      create: vi.fn(),
+      update: vi.fn(),
+      findMany: vi.fn(),
+      findUniqueOrThrow: vi.fn(),
+      count: vi.fn(),
+    },
+    opportunity: {
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
     },
   },
 }));
@@ -61,7 +73,7 @@ describe("app wiring", () => {
     let res: Response;
 
     beforeEach(async () => {
-      res = await request(app).post("/users/login").send({ email: "a@b.com" });
+      res = await request(app).post("/users/login").send({ username: "jdoe" });
     });
 
     it("is mounted under /users", () => {
@@ -107,6 +119,19 @@ describe("app wiring", () => {
 
     // 401 rather than 404 proves the route matched and auth middleware ran
     it("is mounted under /volunteers", () => {
+      expect(res.status).toBe(401);
+    });
+  });
+
+  describe("the opportunities router is reachable", () => {
+    let res: Response;
+
+    beforeEach(async () => {
+      res = await request(app).post("/opportunities").send({});
+    });
+
+    // 401 rather than 404 proves the route matched and auth middleware ran
+    it("is mounted under /opportunities", () => {
       expect(res.status).toBe(401);
     });
   });
