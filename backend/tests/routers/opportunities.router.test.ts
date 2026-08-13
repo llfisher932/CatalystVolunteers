@@ -11,6 +11,7 @@ vi.mock("../../src/db.js", () => ({
       update: vi.fn(),
       delete: vi.fn(),
       findMany: vi.fn(),
+      findUniqueOrThrow: vi.fn(),
       count: vi.fn(),
     },
   },
@@ -223,6 +224,73 @@ describe("GET /opportunities", () => {
 
     it("returns 400", () => {
       expect(res.status).toBe(400);
+    });
+  });
+});
+
+describe("GET /opportunities/:id", () => {
+  describe("the opportunity exists", () => {
+    let res: Response;
+
+    beforeEach(async () => {
+      (prisma.opportunity.findUniqueOrThrow as any).mockResolvedValue({
+        id: 1,
+        title: "Weekend food bank shift",
+        center: "Downtown",
+      });
+
+      res = await request(app).get("/opportunities/1");
+    });
+
+    it("returns 200", () => {
+      expect(res.status).toBe(200);
+    });
+    it("returns the opportunity", () => {
+      expect(res.body.id).toBe(1);
+    });
+    it("targets the right opportunity", () => {
+      expect((prisma.opportunity.findUniqueOrThrow as any).mock.calls[0][0].where).toEqual({ id: 1 });
+    });
+  });
+
+  describe("the id is not a valid number", () => {
+    let res: Response;
+
+    beforeEach(async () => {
+      res = await request(app).get("/opportunities/abc");
+    });
+
+    it("returns 400", () => {
+      expect(res.status).toBe(400);
+    });
+    it("does not query the database", () => {
+      expect(prisma.opportunity.findUniqueOrThrow).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("the id is zero", () => {
+    let res: Response;
+
+    beforeEach(async () => {
+      res = await request(app).get("/opportunities/0");
+    });
+
+    it("returns 400", () => {
+      expect(res.status).toBe(400);
+    });
+  });
+
+  describe("the opportunity does not exist", () => {
+    let res: Response;
+
+    beforeEach(async () => {
+      (prisma.opportunity.findUniqueOrThrow as any).mockRejectedValue({ code: "P2025" });
+
+      res = await request(app).get("/opportunities/999");
+    });
+
+    it("returns 404", () => {
+      expect(res.status).toBe(404);
     });
   });
 });
