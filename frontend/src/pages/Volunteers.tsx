@@ -1,5 +1,5 @@
 import "../index.css";
-import { useState } from "react";
+import { useState, useEffect, type ChangeEvent, type MouseEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../lib/useAuth";
 import VolunteerResult from "../components/VolunteerResult";
@@ -26,25 +26,42 @@ const Volunteers = () => {
 
   const [activeFilter, setActiveFilter] = useState("DEFAULT"); /* filter auto set to APPROVED/PENDING */
 
-  const changeFilter = (event: any) => {
+  const changeFilter = (event: ChangeEvent<HTMLInputElement>) => {
     setActiveFilter(event.target.value);
     setResultsPage(1);
   };
 
   const [currentResultsPage, setResultsPage] = useState(1); /* the current results page is auto set to page 1 */
 
-  const changeResultsPage = (event: any) => {
-    setResultsPage(parseInt(event.target.value));
+  const changeResultsPage = (event: MouseEvent<HTMLButtonElement>) => {
+    setResultsPage(parseInt(event.currentTarget.value));
   };
 
+  /* Search: what the user is typing vs. the debounced term we actually query on.
+     Debouncing avoids firing a request on every keystroke. */
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchTerm(searchInput.trim());
+      setResultsPage(1); /* a new search starts back at page 1 */
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ["volunteers", activeFilter, currentResultsPage],
+    queryKey: ["volunteers", activeFilter, searchTerm, currentResultsPage],
     queryFn: async (): Promise<{ data: VolunteerSummary[], pagination: PageSummary }> => {
       const params = new URLSearchParams();
-        
+
         if(activeFilter !== "DEFAULT")
         {
           params.append("status", activeFilter);
+        }
+        if(searchTerm !== "")
+        {
+          params.append("q", searchTerm);
         }
         if(currentResultsPage !== 1)
         {
@@ -68,8 +85,8 @@ const Volunteers = () => {
         <div className="page-flexbox-main">
           <h1 className="page-header">Manage Volunteers</h1>
           <div className="page-flexbox-column">
-            {/* Search bar placeholder here */}
-            <input type="text" placeholder="Search... (does not work yet lol)" className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200">
+            {/* Search bar: searches across name, username, email, and skills */}
+            <input type="text" placeholder="Search by name, username, email, or skill" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200">
             </input>
 
             {/* Filter options are here */}
@@ -107,6 +124,10 @@ const Volunteers = () => {
                     })}
                 </tbody>
               </table>
+              {/* Volunteer Not Found flow: an empty result set is a success, not an error */}
+              {data?.data.length === 0 && (
+                <p>No volunteers matched your search.</p>
+              )}
             </div>
             {/* Page options */}
             <div className="page-flexbox-row">
