@@ -7,17 +7,18 @@ type VolunteerResultProps = {
     lName: string;
     email: string;
     approvalStatus: string;
+    id: number
 }
 
-const VolunteerResult = ({fName, lName, email, approvalStatus}:VolunteerResultProps) => {
+const VolunteerResult = ({fName, lName, email, approvalStatus, id}:VolunteerResultProps) => {
     return(
         <>
             <td>{fName}</td>
             <td>{lName}</td>
             <td>{email}</td>
             <td>{approvalStatus}</td>
-            {/* Reroute to edit page here (routes to home page for now)*/}
-            <td><Link to="/"> <FontAwesomeIcon icon={faPenToSquare} className="relative top-px" /></Link></td>
+            {/* Reroute to edit page here*/}
+            <td><Link to={"/volunteers/"+id.toString()+"/edit"}> <FontAwesomeIcon icon={faPenToSquare} className="relative top-px" /></Link></td>
         </>
     );
 }
