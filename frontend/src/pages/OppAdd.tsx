@@ -34,8 +34,8 @@ const OppAdd = () => {
   const oppAddMutation = useMutation<unknown, Error, OpportunityCreateInput>({
     mutationFn: (opportunity) => createOpportunity(opportunity, token),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["volunteers"] });
-      navigate("/volunteers");
+      queryClient.invalidateQueries({ queryKey: ["opportunities"] });
+      navigate("/opportunities");
     },
     onError: (error) => {
       if (error instanceof ApiError && error.status === 401) {
