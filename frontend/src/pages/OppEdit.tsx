@@ -82,8 +82,8 @@ const OppEdit = () => {
     <div className="w-full flex justify-center items-center py-16 px-4">
       <form
         noValidate
-        onSubmit={handleSubmit(({ ...opportunity }) => {
-          oppEditMutation.mutate({ ...opportunity });
+        onSubmit={handleSubmit((opportunity) => {
+          oppEditMutation.mutate(opportunity);
         })}
         className="w-full max-w-sm flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
         {error && (
