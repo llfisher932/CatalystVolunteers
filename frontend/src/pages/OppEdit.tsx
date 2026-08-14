@@ -92,13 +92,13 @@ const OppEdit = () => {
           </p>
         )}
         <p className="justify-center">
-          <b>Edit Opportunity "{data.title}"</b>
+          <b>Add an Opportunity</b>
         </p>
         <div className="flex">
-          <div className="flex-1 w-md px-3 space-y-4">
+          <div className="flex-1 w-md px-3 border-e border-gray-300 space-y-4">
             <label className={labelClass}>
               <p>
-                Title
+                Title <span className="text-red-500">*</span>
               </p>
               <input
                 type="text"

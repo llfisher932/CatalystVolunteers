@@ -7,8 +7,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import VolAdd from "./pages/VolAdd";
 import VolEdit from "./pages/VolEdit";
-import OppEdit from "./pages/OppEdit";
 import OppAdd from "./pages/OppAdd";
+import OppEdit from "./pages/OppEdit";
 
 export default function App() {
   return (
@@ -25,6 +25,7 @@ export default function App() {
           <Route path="/opportunities" element={<Opportunities />} />
           <Route path="/opportunities/:id/edit" element={<OppEdit />} />
           <Route path="/opportunities/add" element={<OppAdd />} />
+          <Route path="/opportunities/:id/edit" element={<OppEdit />} />
         </Route>
       </Routes>
     </BrowserRouter>
