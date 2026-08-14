@@ -1,8 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { WithContext as ReactTags, SEPARATORS, type Tag } from "react-tag-input";
-import { volunteerCreateSchema, type VolunteerCreateInput } from "../schemas/volunteer.schema.ts";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../lib/useAuth.ts";
@@ -61,8 +58,8 @@ const OppAdd = () => {
     <div className="w-full flex justify-center items-center py-16 px-4">
       <form
         noValidate
-        onSubmit={handleSubmit(({ ...opportunity }) => {
-          oppAddMutation.mutate({ ...opportunity });
+        onSubmit={handleSubmit((opportunity) => {
+          oppAddMutation.mutate(opportunity);
         })}
         className="w-full max-w-sm flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
         {error && (
@@ -74,7 +71,7 @@ const OppAdd = () => {
           <b>Add an Opportunity</b>
         </p>
         <div className="flex">
-          <div className="flex-1 w-md px-3 border-e border-gray-300 space-y-4">
+          <div className="flex-1 w-md px-3 space-y-4">
             <label className={labelClass}>
               <p>
                 Title <span className="text-red-500">*</span>
