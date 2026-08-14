@@ -37,6 +37,12 @@ const OppEdit = () => {
     mode: "onBlur",
   });
 
+  useEffect(() => {
+    if (data) {
+      reset(data)
+    }
+  }, [data])
+
   const oppEditMutation = useMutation<unknown, Error, OpportunityUpdateInput>({
     mutationFn: (opportunity) => editOpportunity(opportunity, id!, token),
     onSuccess: () => {
@@ -86,13 +92,13 @@ const OppEdit = () => {
           </p>
         )}
         <p className="justify-center">
-          <b>Add an Opportunity</b>
+          <b>Edit Opportunity "{data.title}"</b>
         </p>
         <div className="flex">
-          <div className="flex-1 w-md px-3 border-e border-gray-300 space-y-4">
+          <div className="flex-1 w-md px-3 space-y-4">
             <label className={labelClass}>
               <p>
-                Title <span className="text-red-500">*</span>
+                Title
               </p>
               <input
                 type="text"
@@ -113,7 +119,7 @@ const OppEdit = () => {
             </label>
             <label className={labelClass}>
               <p>
-                Center <span className="text-red-500">*</span>
+                Center
               </p>
               <input
                 type="text"
@@ -128,15 +134,15 @@ const OppEdit = () => {
         <div className="flex">
           <button
             type="button"
-            onClick={() => {reset();}}
+            onClick={() => {navigate("/opportunities");}}
             className="m-2 flex-1 mt-2 rounded-lg bg-red-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60">
-            Clear Form
+            Cancel Edit & Return
           </button>
           <button
             type="submit"
             disabled={oppEditMutation.isPending}
             className="m-2 flex-1 mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60">
-            {oppEditMutation.isPending ? "Adding Opportunity…" : "Add Opportunity"}
+            {oppEditMutation.isPending ? "Editing Opportunity…" : "Edit Opportunity"}
           </button>
         </div>
       </form>
