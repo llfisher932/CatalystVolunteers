@@ -295,7 +295,9 @@ router.get("/", RequiresAuth, validateQuery(volunteerQuerySchema), async (_req, 
  * /volunteers/{id}:
  *   get:
  *     summary: Get a single volunteer
- *     description: Returns the full volunteer record. The password is never included.
+ *     description: >
+ *       Returns the full volunteer record along with the opportunities they are
+ *       matched to. The password is never included.
  *     tags: [Volunteers]
  *     security:
  *       - bearerAuth: []
@@ -310,7 +312,7 @@ router.get("/", RequiresAuth, validateQuery(volunteerQuerySchema), async (_req, 
  *         example: 1
  *     responses:
  *       200:
- *         description: The volunteer
+ *         description: The volunteer, including matched opportunities
  *         content:
  *           application/json:
  *             schema:
@@ -349,6 +351,13 @@ router.get("/:id", RequiresAuth, async (req, res) => {
   const volunteer = await prisma.volunteer.findUniqueOrThrow({
     where: { id },
     omit: { password: true },
+    include: {
+      matches: {
+        include: {
+          opportunity: { select: { id: true, title: true, center: true, createdAt: true } },
+        },
+      },
+    },
   });
 
   return res.json(volunteer);
