@@ -37,11 +37,11 @@
  *       properties:
  *         username:
  *           type: string
- *           example: "jdoe"
+ *           example: "admin"
  *         password:
  *           type: string
  *           format: password
- *           example: "correcthorsebatterystaple"
+ *           example: "password"
  *     LoginResponse:
  *       type: object
  *       properties:
@@ -55,9 +55,36 @@
  *       enum: [PENDING, APPROVED, DISAPPROVED, INACTIVE]
  *       example: "PENDING"
  *
+ *     VolunteerMatch:
+ *       type: object
+ *       description: An opportunity a volunteer is assigned to.
+ *       properties:
+ *         matchedAt:
+ *           type: string
+ *           format: date-time
+ *           example: "2026-07-15T14:30:00.000Z"
+ *         opportunity:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *               example: 1
+ *             title:
+ *               type: string
+ *               example: "Weekend food bank shift"
+ *             center:
+ *               type: string
+ *               example: "Downtown"
+ *             createdAt:
+ *               type: string
+ *               format: date-time
+ *               example: "2026-07-15T14:30:00.000Z"
+ *
  *     Volunteer:
  *       type: object
- *       description: A volunteer record. The password is never returned.
+ *       description: >
+ *         A volunteer record. The password is never returned. The `matches` array
+ *         is returned by the single-volunteer endpoint only, not the list.
  *       properties:
  *         id:
  *           type: integer
@@ -143,6 +170,11 @@
  *           example: false
  *         approvalStatus:
  *           $ref: '#/components/schemas/ApprovalStatus'
+ *         matches:
+ *           type: array
+ *           description: Opportunities this volunteer is assigned to.
+ *           items:
+ *             $ref: '#/components/schemas/VolunteerMatch'
  *
  *     VolunteerSummary:
  *       type: object
@@ -363,9 +395,37 @@
  *         approvalStatus:
  *           $ref: '#/components/schemas/ApprovalStatus'
  *
+ *     OpportunityMatch:
+ *       type: object
+ *       description: A volunteer assigned to an opportunity.
+ *       properties:
+ *         matchedAt:
+ *           type: string
+ *           format: date-time
+ *           example: "2026-07-15T14:30:00.000Z"
+ *         volunteer:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *               example: 1
+ *             firstName:
+ *               type: string
+ *               example: "Jane"
+ *             lastName:
+ *               type: string
+ *               example: "Doe"
+ *             email:
+ *               type: string
+ *               format: email
+ *               example: "jane.doe@example.com"
+ *
  *     Opportunity:
  *       type: object
- *       description: A volunteer opportunity offered at a center.
+ *       description: >
+ *         A volunteer opportunity offered at a center. The `matches` array is
+ *         returned by the single-opportunity and assignment endpoints, but not
+ *         by the list endpoint.
  *       properties:
  *         id:
  *           type: integer
@@ -381,6 +441,11 @@
  *           type: string
  *           description: Free-text center name
  *           example: "Downtown"
+ *         matches:
+ *           type: array
+ *           description: Volunteers assigned to this opportunity.
+ *           items:
+ *             $ref: '#/components/schemas/OpportunityMatch'
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -424,7 +489,8 @@
  *       description: >
  *         Partial update — send only the fields you want to change. Omitted fields
  *         are left untouched. Required fields may be omitted, but cannot be set to
- *         an empty value.
+ *         an empty value. Volunteer assignments are managed separately via
+ *         PUT /opportunities/{id}/volunteers.
  *       properties:
  *         title:
  *           type: string
@@ -436,6 +502,21 @@
  *         center:
  *           type: string
  *           example: "Northside"
+ *
+ *     AssignVolunteersRequest:
+ *       type: object
+ *       required: [volunteerEmails]
+ *       description: >
+ *         Replaces the opportunity's assignment list. Every email must belong to
+ *         an existing volunteer or the whole request is rejected. Sending an empty
+ *         array clears all assignments.
+ *       properties:
+ *         volunteerEmails:
+ *           type: array
+ *           items:
+ *             type: string
+ *             format: email
+ *           example: ["jane.doe@example.com", "john.smith@example.com"]
  *
  *     ErrorResponse:
  *       type: object
