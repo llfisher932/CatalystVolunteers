@@ -1,4 +1,5 @@
 // Base URL of the backend API. Defaults to the local dev server; override with
+import type { OpportunityUpdateInput } from "../schemas/opportunity.schema.ts";
 import { type VolunteerCreateInput, type VolunteerUpdateInput } from "../schemas/volunteer.schema.ts";
 
 // VITE_API_URL in a .env file if the backend runs elsewhere.
@@ -94,6 +95,43 @@ export async function getVolunteer(data: string, token: string | null) {
 
   if (!res.ok) {
     throw new ApiError(res.status, body?.message ?? "Volunteer not found. Please try again.");
+  }
+
+  return body;
+}
+
+export async function editOpportunity(data: OpportunityUpdateInput, id: string, token: string | null) {
+  const res = await fetch("http://localhost:3000/opportunities/" + id, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  const body = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new ApiError(res.status, body?.message ?? "Edit failed. Please try again.");
+  }
+
+  return body;
+}
+
+export async function getOpportunity(data: string, token: string | null) {
+  const res = await fetch(("http://localhost:3000/opportunities/" + data), {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const body = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new ApiError(res.status, body?.message ?? "Opportunity not found. Please try again.");
   }
 
   return body;
