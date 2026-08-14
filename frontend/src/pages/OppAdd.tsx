@@ -83,6 +83,7 @@ const OppAdd = () => {
                 type="text"
                 placeholder="John Doe's Event"
                 required
+                autoFocus
                 className={inputClass}
                 {...register("title")}
               />
@@ -93,8 +94,9 @@ const OppAdd = () => {
                 Description
               </p>
               <textarea
-                placeholder="At this event..."
-                className={inputClass + "rows"}
+                placeholder="What, when, where..."
+                rows={5}
+                className={inputClass}
                 {...register("description")}
               />
             </label>
@@ -104,7 +106,7 @@ const OppAdd = () => {
               </p>
               <input
                 type="text"
-                placeholder="JDC"
+                placeholder="Northside"
                 required
                 className={inputClass}
                 {...register("center")}
