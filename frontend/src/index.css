@@ -34,6 +34,8 @@ body {
   padding: 2% 1%;
   min-width: 1000px;
   min-height: 200px;
+  max-width: 1000px;
+  
 }
 
 .page-flexbox-row {
