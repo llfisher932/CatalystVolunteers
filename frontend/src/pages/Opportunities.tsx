@@ -6,9 +6,9 @@ import { Link } from "react-router-dom";
 import OpportunitiesResult from "../components/OpportunitiesResult";
 
 const Opportunities = () => {
-
   const { token } = useAuth();
-  const linkClass = 'mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800'
+  const linkClass =
+    "mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800";
 
   type OpportunitySummary = {
     id: number;
@@ -54,21 +54,18 @@ const Opportunities = () => {
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["opportunities", activeFilter, searchTerm, currentResultsPage],
-    queryFn: async (): Promise<{ data: OpportunitySummary[], pagination: PageSummary }> => {
+    queryFn: async (): Promise<{ data: OpportunitySummary[]; pagination: PageSummary }> => {
       const params = new URLSearchParams();
 
-        if(activeFilter !== "RECENT")
-        {
-          params.append("filter", activeFilter);
-        }
-        if(searchTerm !== "")
-        {
-          params.append("q", searchTerm);
-        }
-        if(currentResultsPage !== 1)
-        {
-          params.append("page", currentResultsPage.toString());
-        }
+      if (activeFilter !== "RECENT") {
+        params.append("filter", activeFilter);
+      }
+      if (searchTerm !== "") {
+        params.append("q", searchTerm);
+      }
+      if (currentResultsPage !== 1) {
+        params.append("page", currentResultsPage.toString());
+      }
 
       const res = await fetch(`http://localhost:3000/opportunities?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -89,19 +86,33 @@ const Opportunities = () => {
           <div className="page-flexbox-column">
             {/* Search bar to be done by Yousif, commented out for now */}
             {/* Search bar: searches across name, username, email, and skills */}
-            <input type="text" placeholder="Search by name, username, email, or skill" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200">
-            </input>
-            
+            <input
+              type="text"
+              placeholder="Search by name, username, email, or skill"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"></input>
 
             {/* ADD OPPORTUNITY placeholder */}
-            <Link to="/" className={linkClass}> Add Opportunity + </Link>
+            <Link to="/" className={linkClass}>
+              {" "}
+              Add Opportunity +{" "}
+            </Link>
             <br></br>
 
             {/* Filter options are here */}
             <h2>Filters</h2>
             <div className="page-flexbox-row">
               {/* Filters to be done by Yousif */}
-              <label>RECENT: <input type="radio" name="opportunityFilter" value="RECENT" checked={activeFilter==="RECENT"} onChange={changeFilter}></input></label>
+              <label>
+                RECENT:{" "}
+                <input
+                  type="radio"
+                  name="opportunityFilter"
+                  value="RECENT"
+                  checked={activeFilter === "RECENT"}
+                  onChange={changeFilter}></input>
+              </label>
             </div>
 
             <h2>Opportunity List</h2>
@@ -112,33 +123,51 @@ const Opportunities = () => {
                     <th>Title</th>
                     <th>Description</th>
                     <th>Center</th>
-                    <th>Created On...</th>
-                    <th>Last Updated On...</th>
+                    <th>Created</th>
+                    <th>Last Updated</th>
                     <th>Edit</th>
                   </tr>
                 </thead>
                 <tbody>
                   {/* Opportunity info is delivered here */}
-                    {data?.data.map((opportunity) => {
-                      return (
-                        <tr key={opportunity.id}>
-                          <OpportunitiesResult id={opportunity.id} title={opportunity.title} description={opportunity.description} center={opportunity.center} createdAt={opportunity.createdAt} updatedAt={opportunity.updatedAt}/>
-                        </tr>
-                        
-                      );
-                    })}
+                  {data?.data.map((opportunity) => {
+                    return (
+                      <tr key={opportunity.id}>
+                        <OpportunitiesResult
+                          id={opportunity.id}
+                          title={opportunity.title}
+                          description={opportunity.description}
+                          center={opportunity.center}
+                          createdAt={opportunity.createdAt}
+                          updatedAt={opportunity.updatedAt}
+                        />
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               {/* Opportunity Not Found flow: an empty result set is a success, not an error */}
-              {data?.data.length === 0 && (
-                <p>No opportunities matched your search.</p>
-              )}
+              {data?.data.length === 0 && <p>No opportunities matched your search.</p>}
             </div>
             {/* Page options */}
             <div className="page-flexbox-row">
-              <button className="link-button" value={currentResultsPage - 1} disabled={currentResultsPage === 1} onClick={changeResultsPage}>Prev</button>
-              <p>Page {currentResultsPage} of {data?.pagination.totalPages}</p>
-              <button className="link-button" value={currentResultsPage + 1} disabled={currentResultsPage === data?.pagination.totalPages || data?.pagination.totalPages === 0} onClick={changeResultsPage}>Next</button>
+              <button
+                className="link-button"
+                value={currentResultsPage - 1}
+                disabled={currentResultsPage === 1}
+                onClick={changeResultsPage}>
+                Prev
+              </button>
+              <p>
+                Page {currentResultsPage} of {data?.pagination.totalPages}
+              </p>
+              <button
+                className="link-button"
+                value={currentResultsPage + 1}
+                disabled={currentResultsPage === data?.pagination.totalPages || data?.pagination.totalPages === 0}
+                onClick={changeResultsPage}>
+                Next
+              </button>
             </div>
           </div>
         </div>

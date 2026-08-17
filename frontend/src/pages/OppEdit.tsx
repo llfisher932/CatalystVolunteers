@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,18 +14,17 @@ type OpportunityFormInput = z.input<typeof opportunityFormSchema>;
 type OpportunityFormOutput = z.output<typeof opportunityFormSchema>;
 
 const OppEdit = () => {
-
   const navigate = useNavigate();
   const { token, logout } = useAuth();
   const queryClient = useQueryClient();
 
-  //Existance checking
-  const {id} = useParams()
-  const { data, isPending, isError} = useQuery({
+  //Existence checking
+  const { id } = useParams();
+  const { data, isPending, isError } = useQuery({
     queryKey: [id],
     queryFn: () => getOpportunity(id!, token),
-    retry: false
-  })
+    retry: false,
+  });
 
   const {
     register,
@@ -39,9 +38,9 @@ const OppEdit = () => {
 
   useEffect(() => {
     if (data) {
-      reset(data)
+      reset(data);
     }
-  }, [data])
+  }, [data]);
 
   const oppEditMutation = useMutation<unknown, Error, OpportunityUpdateInput>({
     mutationFn: (opportunity) => editOpportunity(opportunity, id!, token),
@@ -71,13 +70,13 @@ const OppEdit = () => {
 
   useEffect(() => {
     if (isError) {
-        navigate("/opportunities");
+      navigate("/opportunities");
     }
   }, [isError, navigate]);
 
   if (isPending) return <p>Loading...</p>;
   if (isError) return null;
-    
+
   return (
     <div className="w-full flex justify-center items-center py-16 px-4">
       <form
@@ -100,32 +99,16 @@ const OppEdit = () => {
               <p>
                 Title <span className="text-red-500">*</span>
               </p>
-              <input
-                type="text"
-                className={inputClass}
-                {...register("title")}
-              />
+              <input type="text" className={inputClass} {...register("title")} />
               {errors.title && <p className={errorClass}>{errors.title.message}</p>}
             </label>
             <label className={labelClass}>
-              <p>
-                Description
-              </p>
-              <textarea
-                rows={5}
-                className={inputClass}
-                {...register("description")}
-              />
+              <p>Description</p>
+              <textarea rows={5} className={inputClass} {...register("description")} />
             </label>
             <label className={labelClass}>
-              <p>
-                Center
-              </p>
-              <input
-                type="text"
-                className={inputClass}
-                {...register("center")}
-              />
+              <p>Center</p>
+              <input type="text" className={inputClass} {...register("center")} />
               {errors.center && <p className={errorClass}>{errors.center.message}</p>}
             </label>
           </div>
@@ -134,7 +117,9 @@ const OppEdit = () => {
         <div className="flex">
           <button
             type="button"
-            onClick={() => {navigate("/opportunities");}}
+            onClick={() => {
+              navigate("/opportunities");
+            }}
             className="m-2 flex-1 mt-2 rounded-lg bg-red-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60">
             Cancel Edit & Return
           </button>
