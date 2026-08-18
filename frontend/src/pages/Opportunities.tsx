@@ -3,7 +3,10 @@ import { useState, useEffect, type ChangeEvent, type MouseEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../lib/useAuth";
 import { Link } from "react-router-dom";
+import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import OpportunitiesResult from "../components/OpportunitiesResult";
+import VolunteerMatches from "../components/VolunteerMatches.tsx";
 
 const Opportunities = () => {
   const { token } = useAuth();
@@ -26,27 +29,40 @@ const Opportunities = () => {
     totalPages: number;
   };
 
-  const [activeFilter, setActiveFilter] =
-    useState("RECENT"); /* filter auto set to RECENT (default)*/
+  const [activeFilter, setActiveFilter] = useState("RECENT"); /* filter auto set to RECENT (default)*/
 
   const changeFilter = (event: ChangeEvent<HTMLInputElement>) => {
     setActiveFilter(event.target.value);
     setResultsPage(1);
   };
 
-  const [selectedCenter, setSelectedCenter] =
-    useState(""); /* "" = all centers */
+  const [selectedCenter, setSelectedCenter] = useState(""); /* "" = all centers */
 
   const changeCenter = (event: ChangeEvent<HTMLSelectElement>) => {
     setSelectedCenter(event.target.value);
     setResultsPage(1);
   };
 
-  const [currentResultsPage, setResultsPage] =
-    useState(1); /* the current results page is auto set to page 1 */
+  const [currentResultsPage, setResultsPage] = useState(1); /* the current results page is auto set to page 1 */
 
   const changeResultsPage = (event: MouseEvent<HTMLButtonElement>) => {
     setResultsPage(parseInt(event.currentTarget.value));
+  };
+
+  const [isModalOpen, toggleModal] = useState<boolean>(false); /* the VolunteerMatches Modal is turned off by default */
+
+  const openModal = () => {
+    toggleModal(true);
+  };
+  const closeModal = () => {
+    toggleModal(false);
+  };
+
+  const [volunteerMatchID, setVolMatchID] = useState<number>(-1);
+
+  const changeVolMatchID = (event: MouseEvent<HTMLButtonElement>) => {
+    openModal();
+    setVolMatchID(parseInt(event.currentTarget.value));
   };
 
   /* Search: what the user is typing vs. the debounced term we actually query on.
@@ -63,13 +79,7 @@ const Opportunities = () => {
   }, [searchInput]);
 
   const { data, isPending, isError, error } = useQuery({
-    queryKey: [
-      "opportunities",
-      activeFilter,
-      selectedCenter,
-      searchTerm,
-      currentResultsPage,
-    ],
+    queryKey: ["opportunities", activeFilter, selectedCenter, searchTerm, currentResultsPage],
     queryFn: async (): Promise<{
       data: OpportunitySummary[];
       pagination: PageSummary;
@@ -126,8 +136,7 @@ const Opportunities = () => {
               placeholder="Search by title or description"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
-            ></input>
+              className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"></input>
 
             {/* ADD OPPORTUNITY placeholder */}
             <Link to="/opportunities/add" className={linkClass}>
@@ -146,8 +155,7 @@ const Opportunities = () => {
                   name="opportunityFilter"
                   value="RECENT"
                   checked={activeFilter === "RECENT"}
-                  onChange={changeFilter}
-                ></input>
+                  onChange={changeFilter}></input>
               </label>
               <label>
                 By Center:{" "}
@@ -156,15 +164,13 @@ const Opportunities = () => {
                   name="opportunityFilter"
                   value="CENTER"
                   checked={activeFilter === "CENTER"}
-                  onChange={changeFilter}
-                ></input>
+                  onChange={changeFilter}></input>
               </label>
               {activeFilter === "CENTER" && (
                 <select
                   value={selectedCenter}
                   onChange={changeCenter}
-                  className="rounded-lg border border-gray-300 px-2 py-1 text-base text-gray-900"
-                >
+                  className="rounded-lg border border-gray-300 px-2 py-1 text-base text-gray-900">
                   <option value="">All centers</option>
                   {centers?.map((center) => (
                     <option key={center} value={center}>
@@ -176,6 +182,7 @@ const Opportunities = () => {
             </div>
 
             <h2>Opportunity List</h2>
+            <VolunteerMatches isOpen={isModalOpen} closeModal={closeModal} id={volunteerMatchID}></VolunteerMatches>
             <div className="page-flexbox-column">
               <table>
                 <thead>
@@ -207,9 +214,7 @@ const Opportunities = () => {
                 </tbody>
               </table>
               {/* Opportunity Not Found flow: an empty result set is a success, not an error */}
-              {data?.data.length === 0 && (
-                <p>No opportunities matched your search.</p>
-              )}
+              {data?.data.length === 0 && <p>No opportunities matched your search.</p>}
             </div>
             {/* Page options */}
             <div className="page-flexbox-row">
@@ -217,8 +222,7 @@ const Opportunities = () => {
                 className="link-button"
                 value={currentResultsPage - 1}
                 disabled={currentResultsPage === 1}
-                onClick={changeResultsPage}
-              >
+                onClick={changeResultsPage}>
                 Prev
               </button>
               <p>
@@ -227,12 +231,8 @@ const Opportunities = () => {
               <button
                 className="link-button"
                 value={currentResultsPage + 1}
-                disabled={
-                  currentResultsPage === data?.pagination.totalPages ||
-                  data?.pagination.totalPages === 0
-                }
-                onClick={changeResultsPage}
-              >
+                disabled={currentResultsPage === data?.pagination.totalPages || data?.pagination.totalPages === 0}
+                onClick={changeResultsPage}>
                 Next
               </button>
             </div>

@@ -3,7 +3,10 @@ import { useState, useEffect, type ChangeEvent, type MouseEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../lib/useAuth";
 import { Link } from "react-router-dom";
+import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import VolunteerResult from "../components/VolunteerResult";
+import OpportunityMatches from "../components/OpportunityMatches.tsx";
 
 const Volunteers = () => {
   const { token } = useAuth();
@@ -25,19 +28,33 @@ const Volunteers = () => {
     totalPages: number;
   };
 
-  const [activeFilter, setActiveFilter] =
-    useState("DEFAULT"); /* filter auto set to APPROVED/PENDING */
+  const [activeFilter, setActiveFilter] = useState("DEFAULT"); /* filter auto set to APPROVED/PENDING */
 
   const changeFilter = (event: ChangeEvent<HTMLInputElement>) => {
     setActiveFilter(event.target.value);
     setResultsPage(1);
   };
 
-  const [currentResultsPage, setResultsPage] =
-    useState(1); /* the current results page is auto set to page 1 */
+  const [currentResultsPage, setResultsPage] = useState(1); /* the current results page is auto set to page 1 */
 
   const changeResultsPage = (event: MouseEvent<HTMLButtonElement>) => {
     setResultsPage(parseInt(event.currentTarget.value));
+  };
+
+  const [isModalOpen, toggleModal] = useState<boolean>(false); /* the VolunteerMatches Modal is turned off by default */
+
+  const openModal = () => {
+    toggleModal(true);
+  };
+  const closeModal = () => {
+    toggleModal(false);
+  };
+
+  const [opportunityMatchID, setOppMatchID] = useState<number>(-1);
+
+  const changeOppMatchID = (event: MouseEvent<HTMLButtonElement>) => {
+    openModal();
+    setOppMatchID(parseInt(event.currentTarget.value));
   };
 
   /* Search: what the user is typing vs. the debounced term we actually query on.
@@ -94,8 +111,7 @@ const Volunteers = () => {
               placeholder="Search by name, username, email, or skill"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
-            ></input>
+              className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"></input>
             <Link to={"/volunteers/add"} className={linkClass}>
               {" "}
               Add Volunteer +{" "}
@@ -111,8 +127,7 @@ const Volunteers = () => {
                   name="volunteerFilter"
                   value="DEFAULT"
                   checked={activeFilter === "DEFAULT"}
-                  onChange={changeFilter}
-                ></input>
+                  onChange={changeFilter}></input>
               </label>
               <label>
                 Approved:{" "}
@@ -121,8 +136,7 @@ const Volunteers = () => {
                   name="volunteerFilter"
                   value="APPROVED"
                   checked={activeFilter === "APPROVED"}
-                  onChange={changeFilter}
-                ></input>
+                  onChange={changeFilter}></input>
               </label>
               <label>
                 Pending Approval:{" "}
@@ -131,8 +145,7 @@ const Volunteers = () => {
                   name="volunteerFilter"
                   value="PENDING"
                   checked={activeFilter === "PENDING"}
-                  onChange={changeFilter}
-                ></input>
+                  onChange={changeFilter}></input>
               </label>
               <label>
                 Disapproved:{" "}
@@ -141,8 +154,7 @@ const Volunteers = () => {
                   name="volunteerFilter"
                   value="DISAPPROVED"
                   checked={activeFilter === "DISAPPROVED"}
-                  onChange={changeFilter}
-                ></input>
+                  onChange={changeFilter}></input>
               </label>
               <label>
                 Inactive:{" "}
@@ -151,8 +163,7 @@ const Volunteers = () => {
                   name="volunteerFilter"
                   value="INACTIVE"
                   checked={activeFilter === "INACTIVE"}
-                  onChange={changeFilter}
-                ></input>
+                  onChange={changeFilter}></input>
               </label>
               <label>
                 All:{" "}
@@ -161,12 +172,17 @@ const Volunteers = () => {
                   name="volunteerFilter"
                   value="ALL"
                   checked={activeFilter === "ALL"}
-                  onChange={changeFilter}
-                ></input>
+                  onChange={changeFilter}></input>
               </label>
             </div>
 
             <h2>Volunteer List</h2>
+            {/* Modal for retrieving opportunity matches */}
+            <OpportunityMatches
+              isOpen={isModalOpen}
+              closeModal={closeModal}
+              id={opportunityMatchID}></OpportunityMatches>
+
             <div className="page-flexbox-column">
               <table>
                 <thead>
@@ -176,6 +192,7 @@ const Volunteers = () => {
                     <th>Email</th>
                     <th>Approval Status</th>
                     <th>Edit</th>
+                    <th>Matches</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -196,9 +213,7 @@ const Volunteers = () => {
                 </tbody>
               </table>
               {/* Volunteer Not Found flow: an empty result set is a success, not an error */}
-              {data?.data.length === 0 && (
-                <p>No volunteers matched your search.</p>
-              )}
+              {data?.data.length === 0 && <p>No volunteers matched your search.</p>}
             </div>
             {/* Page options */}
             <div className="page-flexbox-row">
@@ -206,8 +221,7 @@ const Volunteers = () => {
                 className="link-button"
                 value={currentResultsPage - 1}
                 disabled={currentResultsPage === 1}
-                onClick={changeResultsPage}
-              >
+                onClick={changeResultsPage}>
                 Prev
               </button>
               <p>
@@ -216,12 +230,8 @@ const Volunteers = () => {
               <button
                 className="link-button"
                 value={currentResultsPage + 1}
-                disabled={
-                  currentResultsPage === data?.pagination.totalPages ||
-                  data?.pagination.totalPages === 0
-                }
-                onClick={changeResultsPage}
-              >
+                disabled={currentResultsPage === data?.pagination.totalPages || data?.pagination.totalPages === 0}
+                onClick={changeResultsPage}>
                 Next
               </button>
             </div>
