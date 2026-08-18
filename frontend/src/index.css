@@ -19,6 +19,11 @@ body {
   font-weight: bold;
 
 }
+.page-header-2 {
+  font-size: 32px;
+  font-weight: bold;
+
+}
 
 .page-flexbox-main {
   display: flex;
@@ -34,6 +39,8 @@ body {
   padding: 2% 1%;
   min-width: 1000px;
   min-height: 200px;
+  max-width: 1000px;
+  
 }
 
 .page-flexbox-row {
@@ -74,4 +81,31 @@ body {
 }
 .link-button:disabled{
   color: lightgray;
+}
+
+.icon-button{
+  color: forestgreen;
+}
+.icon-button:hover{
+  color: rgb(21, 84, 21);
+  cursor:pointer;
+}
+
+.modal-main{
+  
+  
+  text-align: center;
+
+  border-color: gray;
+  border-width: 3px;
+  border-radius: 15px;
+
+  margin: 50px 0px 100px;
+  padding: 2% 1%;
+  min-width: 50%;
+  min-height: 200px;
+  max-width: 50%;
+
+  top: 25%;
+  left: 25%;
 }
