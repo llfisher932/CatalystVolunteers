@@ -26,14 +26,16 @@ const Opportunities = () => {
     totalPages: number;
   };
 
-  const [activeFilter, setActiveFilter] = useState("RECENT"); /* filter auto set to RECENT (default)*/
+  const [activeFilter, setActiveFilter] =
+    useState("RECENT"); /* filter auto set to RECENT (default)*/
 
   const changeFilter = (event: ChangeEvent<HTMLInputElement>) => {
     setActiveFilter(event.target.value);
     setResultsPage(1);
   };
 
-  const [currentResultsPage, setResultsPage] = useState(1); /* the current results page is auto set to page 1 */
+  const [currentResultsPage, setResultsPage] =
+    useState(1); /* the current results page is auto set to page 1 */
 
   const changeResultsPage = (event: MouseEvent<HTMLButtonElement>) => {
     setResultsPage(parseInt(event.currentTarget.value));
@@ -54,7 +56,10 @@ const Opportunities = () => {
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["opportunities", activeFilter, searchTerm, currentResultsPage],
-    queryFn: async (): Promise<{ data: OpportunitySummary[]; pagination: PageSummary }> => {
+    queryFn: async (): Promise<{
+      data: OpportunitySummary[];
+      pagination: PageSummary;
+    }> => {
       const params = new URLSearchParams();
 
       if (activeFilter !== "RECENT") {
@@ -91,10 +96,11 @@ const Opportunities = () => {
               placeholder="Search by name, username, email, or skill"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"></input>
+              className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
+            ></input>
 
             {/* ADD OPPORTUNITY placeholder */}
-            <Link to="/" className={linkClass}>
+            <Link to="/opportunities/add" className={linkClass}>
               {" "}
               Add Opportunity +{" "}
             </Link>
@@ -111,7 +117,8 @@ const Opportunities = () => {
                   name="opportunityFilter"
                   value="RECENT"
                   checked={activeFilter === "RECENT"}
-                  onChange={changeFilter}></input>
+                  onChange={changeFilter}
+                ></input>
               </label>
             </div>
 
@@ -147,7 +154,9 @@ const Opportunities = () => {
                 </tbody>
               </table>
               {/* Opportunity Not Found flow: an empty result set is a success, not an error */}
-              {data?.data.length === 0 && <p>No opportunities matched your search.</p>}
+              {data?.data.length === 0 && (
+                <p>No opportunities matched your search.</p>
+              )}
             </div>
             {/* Page options */}
             <div className="page-flexbox-row">
@@ -155,7 +164,8 @@ const Opportunities = () => {
                 className="link-button"
                 value={currentResultsPage - 1}
                 disabled={currentResultsPage === 1}
-                onClick={changeResultsPage}>
+                onClick={changeResultsPage}
+              >
                 Prev
               </button>
               <p>
@@ -164,8 +174,12 @@ const Opportunities = () => {
               <button
                 className="link-button"
                 value={currentResultsPage + 1}
-                disabled={currentResultsPage === data?.pagination.totalPages || data?.pagination.totalPages === 0}
-                onClick={changeResultsPage}>
+                disabled={
+                  currentResultsPage === data?.pagination.totalPages ||
+                  data?.pagination.totalPages === 0
+                }
+                onClick={changeResultsPage}
+              >
                 Next
               </button>
             </div>

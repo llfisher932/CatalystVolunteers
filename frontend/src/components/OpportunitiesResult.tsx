@@ -11,7 +11,14 @@ type OpportunitiesResultProps = {
   updatedAt: string;
 };
 
-const OpportunitiesResult = ({ id, title, description, center, createdAt, updatedAt }: OpportunitiesResultProps) => {
+const OpportunitiesResult = ({
+  id,
+  title,
+  description,
+  center,
+  createdAt,
+  updatedAt,
+}: OpportunitiesResultProps) => {
   return (
     <>
       <td>{title}</td>
@@ -21,7 +28,7 @@ const OpportunitiesResult = ({ id, title, description, center, createdAt, update
       <td>{new Date(updatedAt).toLocaleDateString("en-US")}</td>
       {/* Reroute to edit page here*/}
       <td>
-        <Link to="/">
+        <Link to={`/opportunities/${id}/edit`}>
           {" "}
           <FontAwesomeIcon icon={faPenToSquare} className="relative top-px" />
         </Link>

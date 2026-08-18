@@ -6,7 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../lib/useAuth.ts";
 import { useNavigate, useParams } from "react-router-dom";
 import { ApiError, editOpportunity, getOpportunity } from "../lib/api.ts";
-import { opportunityUpdateSchema, type OpportunityUpdateInput } from "../schemas/opportunity.schema.ts";
+import {
+  opportunityUpdateSchema,
+  type OpportunityUpdateInput,
+} from "../schemas/opportunity.schema.ts";
 
 const opportunityFormSchema = opportunityUpdateSchema;
 
@@ -84,9 +87,13 @@ const OppEdit = () => {
         onSubmit={handleSubmit((opportunity) => {
           oppEditMutation.mutate(opportunity);
         })}
-        className="w-full max-w-sm flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+        className="w-full max-w-sm flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm"
+      >
         {error && (
-          <p role="alert" className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p
+            role="alert"
+            className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700"
+          >
             {error}
           </p>
         )}
@@ -99,17 +106,33 @@ const OppEdit = () => {
               <p>
                 Title <span className="text-red-500">*</span>
               </p>
-              <input type="text" className={inputClass} {...register("title")} />
-              {errors.title && <p className={errorClass}>{errors.title.message}</p>}
+              <input
+                type="text"
+                className={inputClass}
+                {...register("title")}
+              />
+              {errors.title && (
+                <p className={errorClass}>{errors.title.message}</p>
+              )}
             </label>
             <label className={labelClass}>
               <p>Description</p>
-              <textarea rows={5} className={inputClass} {...register("description")} />
+              <textarea
+                rows={5}
+                className={inputClass}
+                {...register("description")}
+              />
             </label>
             <label className={labelClass}>
               <p>Center</p>
-              <input type="text" className={inputClass} {...register("center")} />
-              {errors.center && <p className={errorClass}>{errors.center.message}</p>}
+              <input
+                type="text"
+                className={inputClass}
+                {...register("center")}
+              />
+              {errors.center && (
+                <p className={errorClass}>{errors.center.message}</p>
+              )}
             </label>
           </div>
         </div>
@@ -120,14 +143,18 @@ const OppEdit = () => {
             onClick={() => {
               navigate("/opportunities");
             }}
-            className="m-2 flex-1 mt-2 rounded-lg bg-red-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60">
+            className="m-2 cursor-pointer flex-1 mt-2 rounded-lg bg-red-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60"
+          >
             Cancel Edit & Return
           </button>
           <button
             type="submit"
             disabled={oppEditMutation.isPending}
-            className="m-2 flex-1 mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60">
-            {oppEditMutation.isPending ? "Editing Opportunity…" : "Edit Opportunity"}
+            className="m-2 cursor-pointer flex-1 mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {oppEditMutation.isPending
+              ? "Editing Opportunity…"
+              : "Edit Opportunity"}
           </button>
         </div>
       </form>

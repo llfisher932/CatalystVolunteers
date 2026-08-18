@@ -1,7 +1,10 @@
 // Base URL of the backend API. Defaults to the local dev server; override with
 import type { OpportunityUpdateInput } from "../schemas/opportunity.schema.ts";
 import type { OpportunityCreateInput } from "../schemas/opportunity.schema.ts";
-import { type VolunteerCreateInput, type VolunteerUpdateInput } from "../schemas/volunteer.schema.ts";
+import {
+  type VolunteerCreateInput,
+  type VolunteerUpdateInput,
+} from "../schemas/volunteer.schema.ts";
 
 // VITE_API_URL in a .env file if the backend runs elsewhere.
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
@@ -22,7 +25,10 @@ export class ApiError extends Error {
  * @returns the signed JWT to store via the auth context.
  * @throws {ApiError} 401 on invalid credentials, or another status on failure.
  */
-export async function login(username: string, password: string): Promise<string> {
+export async function login(
+  username: string,
+  password: string,
+): Promise<string> {
   let res: Response;
   try {
     res = await fetch(`${API_URL}/users/login`, {
@@ -38,14 +44,20 @@ export async function login(username: string, password: string): Promise<string>
   const body = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new ApiError(res.status, body?.message ?? "Login failed. Please try again.");
+    throw new ApiError(
+      res.status,
+      body?.message ?? "Login failed. Please try again.",
+    );
   }
 
   return body.token as string;
 }
 
-export async function createVolunteer(data: VolunteerCreateInput, token: string | null) {
-  const res = await fetch("http://localhost:3000/volunteers", {
+export async function createVolunteer(
+  data: VolunteerCreateInput,
+  token: string | null,
+) {
+  const res = await fetch(`${API_URL}/volunteers`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -57,14 +69,21 @@ export async function createVolunteer(data: VolunteerCreateInput, token: string 
   const body = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new ApiError(res.status, body?.message ?? "Creation failed. Please try again.");
+    throw new ApiError(
+      res.status,
+      body?.message ?? "Creation failed. Please try again.",
+    );
   }
 
   return body;
 }
 
-export async function editVolunteer(data: VolunteerUpdateInput, id: string, token: string | null) {
-  const res = await fetch("http://localhost:3000/volunteers/" + id, {
+export async function editVolunteer(
+  data: VolunteerUpdateInput,
+  id: string,
+  token: string | null,
+) {
+  const res = await fetch(`${API_URL}/volunteers/` + id, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -76,15 +95,17 @@ export async function editVolunteer(data: VolunteerUpdateInput, id: string, toke
   const body = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new ApiError(res.status, body?.message ?? "Edit failed. Please try again.");
+    throw new ApiError(
+      res.status,
+      body?.message ?? "Edit failed. Please try again.",
+    );
   }
 
   return body;
 }
-
 
 export async function getVolunteer(data: string, token: string | null) {
-  const res = await fetch(("http://localhost:3000/volunteers/" + data), {
+  const res = await fetch(`${API_URL}/volunteers/` + data, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -95,14 +116,20 @@ export async function getVolunteer(data: string, token: string | null) {
   const body = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new ApiError(res.status, body?.message ?? "Volunteer not found. Please try again.");
+    throw new ApiError(
+      res.status,
+      body?.message ?? "Volunteer not found. Please try again.",
+    );
   }
 
   return body;
 }
 
-export async function createOpportunity(data: OpportunityCreateInput, token: string | null) {
-  const res = await fetch("http://localhost:3000/opportunities", {
+export async function createOpportunity(
+  data: OpportunityCreateInput,
+  token: string | null,
+) {
+  const res = await fetch(`${API_URL}/opportunities`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -114,14 +141,21 @@ export async function createOpportunity(data: OpportunityCreateInput, token: str
   const body = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new ApiError(res.status, body?.message ?? "Creation failed. Please try again.");
+    throw new ApiError(
+      res.status,
+      body?.message ?? "Creation failed. Please try again.",
+    );
   }
 
   return body;
 }
 
-export async function editOpportunity(data: OpportunityUpdateInput, id: string, token: string | null) {
-  const res = await fetch("http://localhost:3000/opportunities/" + id, {
+export async function editOpportunity(
+  data: OpportunityUpdateInput,
+  id: string,
+  token: string | null,
+) {
+  const res = await fetch(`${API_URL}/opportunities/` + id, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -133,15 +167,17 @@ export async function editOpportunity(data: OpportunityUpdateInput, id: string, 
   const body = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new ApiError(res.status, body?.message ?? "Edit failed. Please try again.");
+    throw new ApiError(
+      res.status,
+      body?.message ?? "Edit failed. Please try again.",
+    );
   }
 
   return body;
 }
 
-
 export async function getOpportunity(data: string, token: string | null) {
-  const res = await fetch(("http://localhost:3000/opportunities/" + data), {
+  const res = await fetch(`${API_URL}/opportunities/` + data, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -152,7 +188,10 @@ export async function getOpportunity(data: string, token: string | null) {
   const body = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new ApiError(res.status, body?.message ?? "Opportunity not found. Please try again.");
+    throw new ApiError(
+      res.status,
+      body?.message ?? "Opportunity not found. Please try again.",
+    );
   }
 
   return body;
