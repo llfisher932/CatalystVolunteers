@@ -207,6 +207,11 @@ const Volunteers = () => {
                           approvalStatus={volunteer.approvalStatus}
                           id={volunteer.id}
                         />
+                        <td>
+                          <button onClick={changeOppMatchID} value={volunteer.id}>
+                            <FontAwesomeIcon icon={faCircleInfo} className="icon-button" />
+                          </button>
+                        </td>
                       </tr>
                     );
                   })}
