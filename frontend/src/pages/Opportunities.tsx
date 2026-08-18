@@ -208,15 +208,18 @@ const Opportunities = () => {
                           createdAt={opportunity.createdAt}
                           updatedAt={opportunity.updatedAt}
                         />
+                        <td>
+                          <button onClick={changeVolMatchID} value={opportunity.id}>
+                            <FontAwesomeIcon icon={faCircleInfo} className="icon-button" />
+                          </button>
+                        </td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
-              {/* Opportunity Not Found flow: an empty result set is a success, not an error */}
               {data?.data.length === 0 && <p>No opportunities matched your search.</p>}
             </div>
-            {/* Page options */}
             <div className="page-flexbox-row">
               <button
                 className="link-button"
