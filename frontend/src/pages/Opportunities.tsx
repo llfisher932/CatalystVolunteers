@@ -33,6 +33,13 @@ const Opportunities = () => {
     setResultsPage(1);
   };
 
+  const [selectedCenter, setSelectedCenter] = useState(""); /* "" = all centers */
+
+  const changeCenter = (event: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCenter(event.target.value);
+    setResultsPage(1);
+  };
+
   const [currentResultsPage, setResultsPage] = useState(1); /* the current results page is auto set to page 1 */
 
   const changeResultsPage = (event: MouseEvent<HTMLButtonElement>) => {
@@ -53,12 +60,17 @@ const Opportunities = () => {
   }, [searchInput]);
 
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ["opportunities", activeFilter, searchTerm, currentResultsPage],
+    queryKey: ["opportunities", activeFilter, selectedCenter, searchTerm, currentResultsPage],
     queryFn: async (): Promise<{ data: OpportunitySummary[]; pagination: PageSummary }> => {
       const params = new URLSearchParams();
 
-      if (activeFilter !== "RECENT") {
-        params.append("filter", activeFilter);
+      // "By Center" drops the 60-day window (filter=ALL) and optionally narrows
+      // to one center; "Most Recent" is the backend default, so it needs no param.
+      if (activeFilter === "CENTER") {
+        params.append("filter", "ALL");
+        if (selectedCenter !== "") {
+          params.append("center", selectedCenter);
+        }
       }
       if (searchTerm !== "") {
         params.append("q", searchTerm);
@@ -75,6 +87,18 @@ const Opportunities = () => {
     },
   });
 
+  /* Distinct center names for the "By Center" dropdown. */
+  const { data: centers } = useQuery({
+    queryKey: ["opportunity-centers"],
+    queryFn: async (): Promise<string[]> => {
+      const res = await fetch("http://localhost:3000/opportunities/centers", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to load centers");
+      return res.json();
+    },
+  });
+
   if (isPending) return <p>Loading...</p>;
   if (isError) return <p>{error.message}</p>;
 
@@ -84,11 +108,10 @@ const Opportunities = () => {
         <div className="page-flexbox-main">
           <h1 className="page-header">Manage Opportunities</h1>
           <div className="page-flexbox-column">
-            {/* Search bar to be done by Yousif, commented out for now */}
-            {/* Search bar: searches across name, username, email, and skills */}
+            {/* Search bar: searches across title and description */}
             <input
               type="text"
-              placeholder="Search by name, username, email, or skill"
+              placeholder="Search by title or description"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"></input>
@@ -100,12 +123,11 @@ const Opportunities = () => {
             </Link>
             <br></br>
 
-            {/* Filter options are here */}
+            {/* Filter options: Most Recent (last 60 days) or By Center */}
             <h2>Filters</h2>
             <div className="page-flexbox-row">
-              {/* Filters to be done by Yousif */}
               <label>
-                RECENT:{" "}
+                Most Recent (60 days):{" "}
                 <input
                   type="radio"
                   name="opportunityFilter"
@@ -113,6 +135,28 @@ const Opportunities = () => {
                   checked={activeFilter === "RECENT"}
                   onChange={changeFilter}></input>
               </label>
+              <label>
+                By Center:{" "}
+                <input
+                  type="radio"
+                  name="opportunityFilter"
+                  value="CENTER"
+                  checked={activeFilter === "CENTER"}
+                  onChange={changeFilter}></input>
+              </label>
+              {activeFilter === "CENTER" && (
+                <select
+                  value={selectedCenter}
+                  onChange={changeCenter}
+                  className="rounded-lg border border-gray-300 px-2 py-1 text-base text-gray-900">
+                  <option value="">All centers</option>
+                  {centers?.map((center) => (
+                    <option key={center} value={center}>
+                      {center}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <h2>Opportunity List</h2>
