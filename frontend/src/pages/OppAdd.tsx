@@ -5,7 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../lib/useAuth.ts";
 import { useNavigate } from "react-router-dom";
 import { ApiError, createOpportunity } from "../lib/api.ts";
-import { opportunityCreateSchema, type OpportunityCreateInput } from "../schemas/opportunity.schema.ts";
+import {
+  opportunityCreateSchema,
+  type OpportunityCreateInput,
+} from "../schemas/opportunity.schema.ts";
 
 const opportunityFormSchema = opportunityCreateSchema;
 
@@ -13,7 +16,6 @@ type OpportunityFormInput = z.input<typeof opportunityFormSchema>;
 type OpportunityFormOutput = z.output<typeof opportunityFormSchema>;
 
 const OppAdd = () => {
-
   const navigate = useNavigate();
   const { token, logout } = useAuth();
   const queryClient = useQueryClient();
@@ -61,9 +63,13 @@ const OppAdd = () => {
         onSubmit={handleSubmit((opportunity) => {
           oppAddMutation.mutate(opportunity);
         })}
-        className="w-full max-w-sm flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+        className="w-full max-w-sm flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-8 shadow-sm"
+      >
         {error && (
-          <p role="alert" className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p
+            role="alert"
+            className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700"
+          >
             {error}
           </p>
         )}
@@ -84,12 +90,12 @@ const OppAdd = () => {
                 className={inputClass}
                 {...register("title")}
               />
-              {errors.title && <p className={errorClass}>{errors.title.message}</p>}
+              {errors.title && (
+                <p className={errorClass}>{errors.title.message}</p>
+              )}
             </label>
             <label className={labelClass}>
-              <p>
-                Description
-              </p>
+              <p>Description</p>
               <textarea
                 placeholder="What, when, where..."
                 rows={5}
@@ -108,7 +114,9 @@ const OppAdd = () => {
                 className={inputClass}
                 {...register("center")}
               />
-              {errors.center && <p className={errorClass}>{errors.center.message}</p>}
+              {errors.center && (
+                <p className={errorClass}>{errors.center.message}</p>
+              )}
             </label>
           </div>
         </div>
@@ -116,15 +124,21 @@ const OppAdd = () => {
         <div className="flex">
           <button
             type="button"
-            onClick={() => {reset();}}
-            className="m-2 flex-1 mt-2 rounded-lg bg-red-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60">
+            onClick={() => {
+              reset();
+            }}
+            className="cursor-pointer m-2 flex-1 mt-2 rounded-lg bg-red-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60"
+          >
             Clear Form
           </button>
           <button
             type="submit"
             disabled={oppAddMutation.isPending}
-            className="m-2 flex-1 mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60">
-            {oppAddMutation.isPending ? "Adding Opportunity…" : "Add Opportunity"}
+            className="cursor-pointer m-2 flex-1 mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {oppAddMutation.isPending
+              ? "Adding Opportunity…"
+              : "Add Opportunity"}
           </button>
         </div>
       </form>
