@@ -2,12 +2,17 @@ import "../index.css";
 import { useState, useEffect, type ChangeEvent, type MouseEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../lib/useAuth";
+import { Link } from "react-router-dom";
+import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import VolunteerResult from "../components/VolunteerResult";
+import OpportunityMatches from "../components/OpportunityMatches.tsx";
 
 
 const Volunteers = () => {
 
   const { token } = useAuth();
+  const linkClass = 'mt-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-base font-medium text-white transition hover:bg-emerald-800'
 
   type VolunteerSummary = {
     id: number;
@@ -24,18 +29,35 @@ const Volunteers = () => {
     totalPages: number;
   };
 
+  
   const [activeFilter, setActiveFilter] = useState("DEFAULT"); /* filter auto set to APPROVED/PENDING */
-
+  
   const changeFilter = (event: ChangeEvent<HTMLInputElement>) => {
     setActiveFilter(event.target.value);
     setResultsPage(1);
   };
-
+  
   const [currentResultsPage, setResultsPage] = useState(1); /* the current results page is auto set to page 1 */
-
+  
   const changeResultsPage = (event: MouseEvent<HTMLButtonElement>) => {
     setResultsPage(parseInt(event.currentTarget.value));
   };
+  
+  const [isModalOpen, toggleModal] = useState<boolean>(false); /* the VolunteerMatches Modal is turned off by default */
+
+  const openModal = () => {
+    toggleModal(true);
+  };
+  const closeModal = () => {
+    toggleModal(false);
+  };
+
+  const [opportunityMatchID, setOppMatchID] = useState<number>(-1);
+    
+      const changeOppMatchID = (event: MouseEvent<HTMLButtonElement>) => {
+        openModal();
+        setOppMatchID(parseInt(event.currentTarget.value));
+      }
 
   /* Search: what the user is typing vs. the debounced term we actually query on.
      Debouncing avoids firing a request on every keystroke. */
@@ -88,7 +110,8 @@ const Volunteers = () => {
             {/* Search bar: searches across name, username, email, and skills */}
             <input type="text" placeholder="Search by name, username, email, or skill" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-base text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200">
             </input>
-
+            <Link to={"/volunteers/add"} className={linkClass}> Add Volunteer + </Link>
+            <br></br>
             {/* Filter options are here */}
             <h2>Filters</h2>
             <div className="page-flexbox-row">
@@ -101,6 +124,9 @@ const Volunteers = () => {
             </div>
 
             <h2>Volunteer List</h2>
+            {/* Modal for retrieving opportunity matches */}
+            <OpportunityMatches isOpen={isModalOpen} closeModal={closeModal} id={opportunityMatchID}></OpportunityMatches>
+            
             <div className="page-flexbox-column">
               <table>
                 <thead>
@@ -110,6 +136,7 @@ const Volunteers = () => {
                     <th>Email</th>
                     <th>Approval Status</th>
                     <th>Edit</th>
+                    <th>Matches</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -118,6 +145,7 @@ const Volunteers = () => {
                       return (
                         <tr key={volunteer.id}>
                           <VolunteerResult fName={volunteer.firstName} lName={volunteer.lastName} email={volunteer.email} approvalStatus={volunteer.approvalStatus} id={volunteer.id}/>
+                          <td><button onClick={changeOppMatchID} value={volunteer.id}><FontAwesomeIcon icon={faCircleInfo} className="icon-button" /></button></td>
                         </tr>
                         
                       );
