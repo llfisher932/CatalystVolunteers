@@ -34,14 +34,16 @@ const Opportunities = () => {
     setResultsPage(1);
   };
 
-  const [selectedCenter, setSelectedCenter] = useState(""); /* "" = all centers */
+  const [selectedCenter, setSelectedCenter] =
+    useState(""); /* "" = all centers */
 
   const changeCenter = (event: ChangeEvent<HTMLSelectElement>) => {
     setSelectedCenter(event.target.value);
     setResultsPage(1);
   };
 
-  const [currentResultsPage, setResultsPage] = useState(1); /* the current results page is auto set to page 1 */
+  const [currentResultsPage, setResultsPage] =
+    useState(1); /* the current results page is auto set to page 1 */
 
   const changeResultsPage = (event: MouseEvent<HTMLButtonElement>) => {
     setResultsPage(parseInt(event.currentTarget.value));
@@ -56,13 +58,22 @@ const Opportunities = () => {
     const timer = setTimeout(() => {
       setSearchTerm(searchInput.trim());
       setResultsPage(1); /* a new search starts back at page 1 */
-    }, 300);
+    }, 650);
     return () => clearTimeout(timer);
   }, [searchInput]);
 
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ["opportunities", activeFilter, selectedCenter, searchTerm, currentResultsPage],
-    queryFn: async (): Promise<{ data: OpportunitySummary[]; pagination: PageSummary }> => {
+    queryKey: [
+      "opportunities",
+      activeFilter,
+      selectedCenter,
+      searchTerm,
+      currentResultsPage,
+    ],
+    queryFn: async (): Promise<{
+      data: OpportunitySummary[];
+      pagination: PageSummary;
+    }> => {
       const params = new URLSearchParams();
 
       // "By Center" drops the 60-day window (filter=ALL) and optionally narrows
@@ -145,13 +156,15 @@ const Opportunities = () => {
                   name="opportunityFilter"
                   value="CENTER"
                   checked={activeFilter === "CENTER"}
-                  onChange={changeFilter}></input>
+                  onChange={changeFilter}
+                ></input>
               </label>
               {activeFilter === "CENTER" && (
                 <select
                   value={selectedCenter}
                   onChange={changeCenter}
-                  className="rounded-lg border border-gray-300 px-2 py-1 text-base text-gray-900">
+                  className="rounded-lg border border-gray-300 px-2 py-1 text-base text-gray-900"
+                >
                   <option value="">All centers</option>
                   {centers?.map((center) => (
                     <option key={center} value={center}>
